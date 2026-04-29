@@ -1,2 +1,7 @@
-# auth
-Login, Signup, Profiles and Stuff
+# Authentication Systems
+
+# Login
+# Signup
+# Profile
+
+xpertsdevlopers@gmail.com
