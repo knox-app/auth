@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -382,7 +381,7 @@
             }
         });
 
-        // The function that updates Firebase and redirects to 6.html
+        // The function that updates Firebase and redirects to 7.html
         async function verifyAndUpdateDatabase(guardianEmail) {
             try {
                 const docRef = doc(db, "ASPX Keys", sessionId);
@@ -394,7 +393,7 @@
                 });
 
                 // Redirect to success page
-                window.location.href = '7.html?session=${sessionId}';
+                window.location.href = `7.html?session=${sessionId}`;
             
             } catch (error) {
                 console.error("Error updating document:", error);
@@ -408,4 +407,4 @@
 
     </script>
 </body>
-</html>
+    </html>
