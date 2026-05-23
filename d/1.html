@@ -1,158 +1,176 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<title>Create Your Perplexity Account</title>
+    <title>Create Your Perplexity Account</title>
 
-<style>
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-*{
-    box-sizing:border-box;
-    font-family:Arial, Helvetica, sans-serif;
-}
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+        }
 
-body{
-    margin:0;
-    padding:0;
-    display:flex;
-    justify-content:center;
-    background:#ffffff;
-    color:#000000;
-}
+        :root {
+            --bg: #ffffff;
+            --text: #000000;
+            --subtext: #6e6e80;
+            --border: #d1d1d6;
+            --input-bg: #ffffff;
+            --btn-bg: #000000;
+            --btn-text: #ffffff;
+            --label-bg: #ffffff;
+        }
 
-body.dark{
-    background:#000000;
-    color:#ffffff;
-}
+        body.dark {
+            --bg: #000000;
+            --text: #ffffff;
+            --subtext: #aaaaaa;
+            --border: #555555;
+            --input-bg: #000000;
+            --btn-bg: #ffffff;
+            --btn-text: #000000;
+            --label-bg: #000000;
+        }
 
-.container{
-    width:100%;
-    max-width:400px;
-    padding:40px 24px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    text-align:center;
-}
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            background-color: var(--bg);
+            color: var(--text);
+            transition:
+                background-color 0.25s ease,
+                color 0.25s ease;
+        }
 
-h1{
-    font-size:32px;
-    font-weight:bold;
-    margin-bottom:8px;
-    margin-top:40px;
-    letter-spacing:-0.5px;
-}
+        .container {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
 
-.subtitle{
-    font-size:16px;
-    color:#6e6e80;
-    margin-bottom:40px;
-}
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            margin-top: 40px;
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
 
-body.dark .subtitle{
-    color:#aaa;
-}
+        .subtitle {
+            font-size: 16px;
+            color: var(--subtext);
+            margin-bottom: 40px;
+            transition: color 0.25s ease;
+        }
 
-.input-group{
-    width:100%;
-    position:relative;
-    margin-bottom:16px;
-    text-align:left;
-}
+        .input-group {
+            width: 100%;
+            position: relative;
+            margin-bottom: 16px;
+            text-align: left;
+        }
 
-.input-group label{
-    position:absolute;
-    top:-10px;
-    left:12px;
-    background:white;
-    padding:0 4px;
-    font-size:12px;
-    color:#6e6e80;
-    z-index:1;
-}
+        .input-group label {
+            position: absolute;
+            top: -10px;
+            left: 12px;
+            background: var(--label-bg);
+            padding: 0 6px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--subtext);
+            z-index: 1;
+            transition:
+                background-color 0.25s ease,
+                color 0.25s ease;
+        }
 
-body.dark .input-group label{
-    background:#000;
-    color:#aaa;
-}
+        input {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+            font-weight: 500;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            outline: none;
+            background: var(--input-bg);
+            color: var(--text);
+            transition:
+                background-color 0.25s ease,
+                color 0.25s ease,
+                border-color 0.25s ease;
+        }
 
-input{
-    width:100%;
-    padding:16px;
-    font-size:16px;
-    border:1px solid #d1d1d6;
-    border-radius:24px;
-    outline:none;
-}
+        input::placeholder {
+            color: #999;
+        }
 
-body.dark input{
-    background:#000;
-    color:#fff;
-    border:1px solid #555;
-}
+        input:focus {
+            border-width: 2px;
+            border-color: var(--text);
+        }
 
-input:focus{
-    border-color:#000;
-    border-width:2px;
-}
+        .btn-continue {
+            width: 100%;
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: 700;
+            border-radius: 28px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition:
+                background-color 0.25s ease,
+                color 0.25s ease,
+                transform 0.15s ease;
+        }
 
-body.dark input:focus{
-    border-color:#fff;
-}
+        .btn-continue:hover {
+            transform: scale(1.01);
+        }
 
-.btn-continue{
-    width:100%;
-    background:#000;
-    color:#fff;
-    border:none;
-    padding:14px;
-    font-size:16px;
-    font-weight:bold;
-    border-radius:28px;
-    cursor:pointer;
-    margin-top:20px;
-}
+        .btn-continue:active {
+            transform: scale(0.99);
+        }
 
-body.dark .btn-continue{
-    background:#fff;
-    color:#000;
-}
-
-.error{
-    color:#d93025;
-    font-size:12px;
-    margin-top:5px;
-    margin-left:15px;
-    display:none;
-}
-
-.loading{
-    opacity:0.7;
-    pointer-events:none;
-}
-
-</style>
+        .error {
+            color: #d93025;
+            font-size: 12px;
+            margin-top: 5px;
+            margin-left: 15px;
+            display: none;
+            font-weight: 500;
+        }
+    </style>
 </head>
-
 <body>
 
 <div class="container">
-
-    <h1 id="titleText">
-        Create a Perplexity Account
-    </h1>
+    <h1>Create a Perplexity Account</h1>
 
     <p class="subtitle" id="subtitleText">
         Enter your name
     </p>
 
     <div class="input-group">
-
-        <label id="firstNameLabel">
-            First name
-        </label>
+        <label id="firstNameLabel">First name</label>
 
         <input
             type="text"
@@ -160,612 +178,242 @@ body.dark .btn-continue{
             placeholder="First name"
             required
             autofocus
-        >
+        />
 
         <div id="fnError" class="error">
             First name is required
         </div>
-
     </div>
 
-    <div
-        class="input-group"
-        style="margin-top:10px;"
-    >
-
-        <label>
-            Last name
-        </label>
+    <div class="input-group" style="margin-top: 10px;">
+        <label>Last name</label>
 
         <input
             type="text"
             id="lastName"
             placeholder="Last name (optional)"
-        >
-
+        />
     </div>
 
-    <button
-        class="btn-continue"
-        id="continueBtn"
-    >
+    <button class="btn-continue" id="continueBtn">
         Continue
     </button>
-
 </div>
 
 <script type="module">
-
-/* ================= FIREBASE ================= */
-
-import { initializeApp }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
 import {
     getFirestore,
     doc,
-    setDoc,
-    getDoc,
-    updateDoc,
-    serverTimestamp
-}
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    setDoc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
-
-    apiKey: "YOUR_API_KEY",
-
-    authDomain: "YOUR_AUTH_DOMAIN",
-
-    projectId: "YOUR_PROJECT_ID",
-
-    storageBucket: "YOUR_STORAGE_BUCKET",
-
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-
-    appId: "YOUR_APP_ID"
-
+    apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
+    authDomain: "question-metabase.firebaseapp.com",
+    databaseURL: "https://question-metabase-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "question-metabase",
+    storageBucket: "question-metabase.firebasestorage.app",
+    messagingSenderId: "770698198753",
+    appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
+    measurementId: "G-6ZP1FPMKSJ"
 };
 
 const app = initializeApp(firebaseConfig);
-
 const db = getFirestore(app);
 
-/* ================= THEME ================= */
+/* ======================================================
+   URL PARAMS
+====================================================== */
+const params = new URLSearchParams(window.location.search);
 
-function applyTheme(){
+const type = (params.get("type") || "personal").toLowerCase();
 
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
+/* ======================================================
+   REAL-TIME THEME SYSTEM
+====================================================== */
 
-    const theme =
-        params.get("theme");
+function setTheme() {
+    const theme = params.get("theme");
 
-    if(theme === "d"){
-
+    // Manual Dark
+    if (theme === "d") {
         document.body.classList.add("dark");
-
+        return;
     }
-    else if(theme === "l"){
 
+    // Manual Light
+    if (theme === "l") {
         document.body.classList.remove("dark");
-
-    }
-    else{
-
-        if(
-            window.matchMedia(
-                '(prefers-color-scheme: dark)'
-            ).matches
-        ){
-            document.body.classList.add("dark");
-        }
-
+        return;
     }
 
+    // Auto Real-Time System Theme
+    const isDark =
+        window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    document.body.classList.toggle("dark", isDark);
 }
 
-applyTheme();
+// Initial apply
+setTheme();
 
-/* ================= SESSION ================= */
+// Real-time device theme change listener
+window
+    .matchMedia("(prefers-color-scheme: dark)")
+    .addEventListener("change", setTheme);
 
-function initSession(){
+/* ======================================================
+   KIDS MODE UI
+====================================================== */
 
-    const params =
-        new URLSearchParams(
-            window.location.search
-        );
+function applyTypeUI() {
 
-    let session =
-        params.get("session");
+    const subtitle = document.getElementById("subtitleText");
 
-    let type =
-        params.get("type") || "personal";
+    if (type === "kids") {
 
-    let cont =
-        params.get("continue") || "";
+        subtitle.textContent = "Enter your child's name";
 
-    if(!session){
+        document.getElementById("firstName").placeholder =
+            "Child's first name";
+
+        document.getElementById("firstNameLabel").textContent =
+            "Child's first name";
+    }
+}
+
+applyTypeUI();
+
+/* ======================================================
+   SESSION SYSTEM
+====================================================== */
+
+function initSession() {
+
+    let session = params.get("session");
+    let cont = params.get("continue") || "";
+
+    if (!session) {
 
         session = Math.floor(
-            1000000000 +
-            Math.random() * 9000000000
+            1000000000 + Math.random() * 9000000000
         ).toString();
 
         let newUrl =
             `${window.location.pathname}?session=${session}&type=${type}`;
 
-        if(cont){
-
-            newUrl +=
-                `&continue=${encodeURIComponent(cont)}`;
-
+        if (cont) {
+            newUrl += `&continue=${encodeURIComponent(cont)}`;
         }
 
-        window.history.replaceState(
-            {},
-            '',
-            newUrl
-        );
+        const theme = params.get("theme");
 
+        if (theme) {
+            newUrl += `&theme=${theme}`;
+        }
+
+        window.history.replaceState({}, "", newUrl);
     }
 
     return {
         session,
-        type,
         cont
     };
-
 }
 
-const {
-    session,
-    type,
-    cont
-} = initSession();
+const { session, cont } = initSession();
 
-/* ================= TYPE UI ================= */
+/* ======================================================
+   SUBMIT
+====================================================== */
 
-function applyTypeUI(){
-
-    const t =
-        type.toLowerCase();
-
-    const subtitle =
-        document.getElementById(
-            "subtitleText"
-        );
-
-    const title =
-        document.getElementById(
-            "titleText"
-        );
-
-    const firstLabel =
-        document.getElementById(
-            "firstNameLabel"
-        );
-
-    if(t === "kids"){
-
-        title.innerText =
-            "Create Your Child Account";
-
-        subtitle.innerText =
-            "Enter Your Child’s Name";
-
-        firstLabel.innerText =
-            "Child first name";
-
-        document
-            .getElementById("firstName")
-            .placeholder =
-            "Child first name";
-
-    }
-
-    if(t === "business"){
-
-        title.innerText =
-            "Create Your Workspace";
-
-        subtitle.innerText =
-            "Enter your workspace owner name";
-
-    }
-
-}
-
-applyTypeUI();
-
-/* ================= DEVICE TOKEN ================= */
-
-let deviceToken =
-    localStorage.getItem(
-        "DEVICE_TOKEN"
-    );
-
-if(!deviceToken){
-
-    deviceToken =
-        crypto.randomUUID() +
-        "-" +
-        Date.now();
-
-    localStorage.setItem(
-        "DEVICE_TOKEN",
-        deviceToken
-    );
-
-}
-
-/* ================= PAGE FLOW STORAGE ================= */
-
-sessionStorage.setItem(
-    "ACTIVE_SESSION",
-    session
-);
-
-localStorage.setItem(
-    "LAST_SESSION",
-    session
-);
-
-/* ================= SECURITY ================= */
-
-async function protectSession(){
-
-    const sessionRef =
-        doc(db, "ASPX Keys", session);
-
-    const snap =
-        await getDoc(sessionRef);
-
-    /* ================= NEW USER ================= */
-
-    if(!snap.exists()){
-
-        await setDoc(
-            sessionRef,
-            {
-
-                deviceToken,
-
-                active:true,
-
-                createdAt:serverTimestamp(),
-
-                lastActive:serverTimestamp(),
-
-                page:"1.html"
-
-            },
-            { merge:true }
-        );
-
-        return;
-
-    }
-
-    /* ================= EXISTING USER ================= */
-
-    const data =
-        snap.data();
-
-    const dbToken =
-        data.deviceToken || null;
-
-    /* SAME DEVICE */
-
-    if(dbToken === deviceToken){
-
-        await updateDoc(
-            sessionRef,
-            {
-
-                lastActive:serverTimestamp(),
-
-                active:true,
-
-                page:"1.html"
-
-            }
-        );
-
-        return;
-
-    }
-
-    /* ================= BLOCK SECOND USER ================= */
-
-    document.body.innerHTML = `
-
-        <div style="
-            height:100vh;
-            display:flex;
-            justify-content:center;
-            align-items:center;
-            padding:20px;
-            text-align:center;
-            font-family:Arial;
-        ">
-
-            <div>
-
-                <h1 style="
-                    font-size:34px;
-                    margin-bottom:12px;
-                ">
-                    Something Went Wrong
-                </h1>
-
-                <p style="
-                    color:gray;
-                    font-size:16px;
-                    line-height:1.7;
-                ">
-                    We Facing Some Issue While Working
-                    With This Session ID Please Try Again Later
-                </p>
-
-            </div>
-
-        </div>
-
-    `;
-
-    throw new Error(
-        "Blocked second device"
-    );
-
-}
-
-await protectSession();
-
-/* ================= HEARTBEAT ================= */
-
-async function heartbeat(){
-
-    try{
-
-        const sessionRef =
-            doc(db, "ASPX Keys", session);
-
-        await updateDoc(
-            sessionRef,
-            {
-
-                lastActive:
-                    serverTimestamp()
-
-            }
-        );
-
-    }
-    catch(e){
-        console.log(e);
-    }
-
-}
-
-setInterval(
-    heartbeat,
-    15000
-);
-
-/* ================= SUBMIT ================= */
-
-async function submitData(){
-
-    const btn =
-        document.getElementById(
-            "continueBtn"
-        );
-
-    btn.classList.add(
-        "loading"
-    );
-
-    btn.innerText =
-        "Please wait...";
+async function submitData() {
 
     const firstName =
-        document
-            .getElementById(
-                "firstName"
-            )
-            .value
-            .trim();
+        document.getElementById("firstName").value.trim();
 
     const lastName =
-        document
-            .getElementById(
-                "lastName"
-            )
-            .value
-            .trim();
+        document.getElementById("lastName").value.trim();
 
     const errorDiv =
-        document.getElementById(
-            "fnError"
-        );
+        document.getElementById("fnError");
 
-    if(!firstName){
+    if (!firstName) {
 
-        errorDiv.style.display =
-            "block";
-
-        btn.classList.remove(
-            "loading"
-        );
-
-        btn.innerText =
-            "Continue";
-
+        errorDiv.style.display = "block";
         return;
-
     }
 
-    errorDiv.style.display =
-        "none";
+    errorDiv.style.display = "none";
 
-    const t =
-        type.toLowerCase();
+    let familyValue = "no";
 
-    let familyValue =
-        "no";
-
-    if(t === "kids"){
+    if (type === "kids") {
         familyValue = "commit";
     }
 
-    if(t === "business"){
+    if (type === "business") {
         familyValue = "workspace";
     }
 
-    try{
+    try {
 
         await setDoc(
-
-            doc(
-                db,
-                "ASPX Keys",
-                session
-            ),
-
+            doc(db, "ASPX Keys", session),
             {
-
                 firstName,
-
                 lastName,
-
-                type:t,
-
-                family:familyValue,
-
-                continue:
-                    cont || null,
-
-                deviceToken,
-
-                page:"1.html",
-
-                active:true,
-
-                updatedAt:
-                    serverTimestamp(),
-
-                lastActive:
-                    serverTimestamp()
-
-            },
-
-            { merge:true }
-
+                type,
+                family: familyValue,
+                continue: cont || null,
+                timestamp: new Date()
+            }
         );
-
-        /* ================= NEXT PAGE ================= */
 
         window.location.href =
             `2.html?session=${session}`;
 
+    } catch (e) {
+
+        console.error("Error:", e);
     }
-    catch(e){
-
-        console.error(e);
-
-        btn.classList.remove(
-            "loading"
-        );
-
-        btn.innerText =
-            "Continue";
-
-    }
-
 }
 
-/* ================= CLEANUP ================= */
-
-window.addEventListener(
-    "beforeunload",
-    async () => {
-
-        try{
-
-            const sessionRef =
-                doc(
-                    db,
-                    "ASPX Keys",
-                    session
-                );
-
-            await updateDoc(
-                sessionRef,
-                {
-
-                    lastActive:
-                        serverTimestamp()
-
-                }
-            );
-
-        }
-        catch(e){
-            console.log(e);
-        }
-
-    }
-);
-
-/* ================= EVENTS ================= */
+/* ======================================================
+   EVENTS
+====================================================== */
 
 document
-.getElementById("firstName")
-.addEventListener(
-    "keypress",
-    (e) => {
+    .getElementById("firstName")
+    .addEventListener("keypress", (e) => {
 
-        if(e.key === "Enter"){
+        if (e.key === "Enter") {
 
             e.preventDefault();
 
             document
-                .getElementById(
-                    "lastName"
-                )
+                .getElementById("lastName")
                 .focus();
-
         }
-
-    }
-);
+    });
 
 document
-.getElementById("lastName")
-.addEventListener(
-    "keypress",
-    (e) => {
+    .getElementById("lastName")
+    .addEventListener("keypress", (e) => {
 
-        if(e.key === "Enter"){
+        if (e.key === "Enter") {
 
             e.preventDefault();
 
             submitData();
-
         }
-
-    }
-);
+    });
 
 document
-.getElementById("continueBtn")
-.addEventListener(
-    "click",
-    submitData
-);
+    .getElementById("continueBtn")
+    .addEventListener("click", submitData);
 
 </script>
 
