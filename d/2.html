@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Confirm your info</title>
+    <title>Confirm your information</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -51,7 +51,23 @@
 
         .container { width: 100%; max-width: 400px; padding: 25px; text-align: center; }
         
-        h1 { font-size: 32px; font-weight: 600; margin-bottom: 15px; color: var(--text-primary); }
+        h1 { 
+            font-size: 32px; 
+            font-weight: 600; 
+            margin-bottom: 15px; 
+            color: var(--text-primary); 
+        }
+
+        /* Mobile specific heading adjustment for 2 lines */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 26px; /* Slightly smaller to fit nicely */
+                line-height: 1.3;
+                text-wrap: balance; /* Forces balanced multi-line text */
+                padding: 0 10px;
+            }
+        }
+
         p { color: var(--text-secondary); font-size: 15px; margin-bottom: 35px; line-height: 1.4; }
         
         .input-group { position: relative; margin-bottom: 22px; text-align: left; }
@@ -73,10 +89,8 @@
         
         .input-field:focus { border-color: var(--input-focus); border-width: 1.5px; }
 
-        /* Remove default select styling */
         select.input-field { appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; }
 
-        /* Remove Up/Down arrows from number inputs */
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type="number"] { -moz-appearance: textfield; }
@@ -102,7 +116,7 @@
             padding: 30px 25px; border-radius: 24px; width: 90%; max-width: 380px;
             text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
         }
-        .modal-box p { margin-bottom: 25px; font-size: 16px; color: var(--text-primary); }
+        .modal-box p { margin-bottom: 25px; font-size: 16px; color: var(--text-primary); line-height: 1.5; }
         .modal-btn {
             width: 100%; padding: 14px; margin-bottom: 10px; border-radius: 50px;
             font-size: 15px; font-weight: 600; cursor: pointer; border: none;
@@ -171,7 +185,6 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    // Added deleteDoc
     import { getFirestore, doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -191,20 +204,18 @@
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session');
 
-    // Global state variables
     let currentType = "";
     let userFirstName = "";
     let continueUrl = "";
     const docRef = sessionId ? doc(db, "ASPX Keys", sessionId) : null;
 
-    // Fetch user data dynamically
     if (docRef) {
         getDoc(docRef).then((docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
                 currentType = data.type;
                 userFirstName = data.firstName; 
-                continueUrl = data.continue || "/"; // Fallback URL
+                continueUrl = data.continue || "/"; 
 
                 const heading = document.getElementById("main-heading");
                 const subText = document.getElementById("sub-text");
@@ -222,13 +233,21 @@
         }).catch((error) => console.error("Error fetching doc: ", error));
     }
 
-    // Modal Elements
+    // Disable Arrow Up/Down Keys on Number Inputs
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+            }
+        });
+    });
+
     const modalOverlay = document.getElementById('modalOverlay');
     const modalText = document.getElementById('modalText');
     const modalBtnA = document.getElementById('modalBtnA');
     const modalBtnB = document.getElementById('modalBtnB');
 
-    // Date Validation Function (Handles Leap Years & 30/31 days)
+    // Robust Date Validation (Leap Years & Correct Days Per Month)
     function isValidDate(day, month, year) {
         const d = parseInt(day, 10);
         const m = parseInt(month, 10);
@@ -242,7 +261,7 @@
         return d > 0 && d <= daysInMonth[m - 1];
     }
 
-    // Age Calculation Function
+    // Robust Age Calculation
     function calculateAge(day, month, year) {
         const today = new Date();
         const birthDate = new Date(year, month - 1, day);
@@ -254,17 +273,14 @@
         return age;
     }
 
-    // Show Error
     function showError(message) {
         const errorDiv = document.getElementById('error');
         errorDiv.innerText = message;
         errorDiv.style.display = 'block';
     }
 
-    // Helper to format date string
     const getFormattedDate = () => `${document.getElementById('day').value}/${document.getElementById('month').value}/${document.getElementById('year').value}`;
 
-    // Main Form Submit Handler
     document.getElementById('nextBtn').addEventListener('click', async () => {
         document.getElementById('error').style.display = 'none';
 
@@ -273,8 +289,9 @@
         const year = document.getElementById('year').value;
         const gender = document.getElementById('gender').value;
 
+        // Calendar Logic Check
         if (day.length === 0 || year.length !== 4 || !isValidDate(day, month, year)) {
-            showError("Please enter a valid date of birth.");
+            showError("Please enter a valid calendar date.");
             return;
         }
 
@@ -285,28 +302,27 @@
 
         const age = calculateAge(day, month, year);
 
-        // Kids logic: Age > 15
+        // Fixed Grammar and Logic for Kids Account
         if (currentType === "kids" && age >= 15) {
-            modalText.innerText = `We have noticed that the date of birth of ${userFirstName} is more than 15+ so would you want to switch to Personal Account?`;
+            modalText.innerText = `We noticed that ${userFirstName || 'this user'} is 15 or older. Would you like to switch to a Personal Account?`;
             modalBtnA.innerText = "Continue with Kids Account";
             modalBtnB.innerText = "Switch to Personal Account";
             
-            modalBtnA.onclick = () => saveAndProceed({}); // No extra changes
+            modalBtnA.onclick = () => saveAndProceed({}); 
             modalBtnB.onclick = () => saveAndProceed({ type: "personal", family: "no" }); 
             
             modalOverlay.style.display = 'flex';
             return;
         }
 
-        // Personal logic: Age < 15
+        // Fixed Grammar and Logic for Personal Account
         if (currentType === "personal" && age < 15) {
-            modalText.innerText = "We have noticed that your date of birth is less than 15 so would you want to switch to a Kids Account?";
+            modalText.innerText = "We noticed that you are under 15 years old. Would you like to switch to a Kids Account?";
             modalBtnA.innerText = "Switch to Kids Account";
             modalBtnB.innerText = "Cancel";
             
             modalBtnA.onclick = () => saveAndProceed({ type: "kids", family: "commit database" });
             modalBtnB.onclick = async () => {
-                // User cancels, delete session & redirect
                 try {
                     await deleteDoc(docRef);
                     window.location.href = continueUrl; 
@@ -319,11 +335,9 @@
             return;
         }
 
-        // Default valid flow
         saveAndProceed({});
     });
 
-    // Save to Firestore & Redirect
     async function saveAndProceed(additionalData) {
         try {
             const baseData = {
@@ -332,7 +346,6 @@
                 updatedAt: serverTimestamp()
             };
             
-            // Merge additional data (like type or family changes from modals)
             const finalData = { ...baseData, ...additionalData };
 
             await updateDoc(docRef, finalData);
