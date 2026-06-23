@@ -1,9 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var theme = params.get('theme');
+            if (theme === 'dark' || theme === 'light') {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Create ffffPassword</title>
+    <title>Create Password</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         /* Light theme (default) */
@@ -21,7 +30,7 @@
             --checkbox-accent: #000000;
         }
 
-        /* Dark theme */
+        /* Dark theme via system preference */
         @media (prefers-color-scheme: dark) {
             :root {
                 --bg-color: #000000;
@@ -36,6 +45,35 @@
                 --label-bg: #000000;
                 --checkbox-accent: #ffffff;
             }
+        }
+
+        /* Explicit theme override via ?theme=dark or ?theme=light in URL */
+        html[data-theme="dark"] {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --label-color: #a1a1aa;
+            --input-border: #3a3a3a;
+            --input-focus-border: #ffffff;
+            --input-bg: #000000;
+            --btn-bg: #ffffff;
+            --btn-color: #000000;
+            --btn-disabled-bg: #444444;
+            --label-bg: #000000;
+            --checkbox-accent: #ffffff;
+        }
+
+        html[data-theme="light"] {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --label-color: #6e6e73;
+            --input-border: #c2c8d0;
+            --input-focus-border: #000000;
+            --input-bg: #ffffff;
+            --btn-bg: #000000;
+            --btn-color: #ffffff;
+            --btn-disabled-bg: #cccccc;
+            --label-bg: #ffffff;
+            --checkbox-accent: #000000;
         }
 
         body {
@@ -289,7 +327,9 @@
             });
 
             // Success Redirect
-            window.location.href = `5.html?session=${sessionId}`;
+            const themeParam = urlParams.get('theme');
+            const redirectUrl = themeParam ? `5.html?session=${sessionId}&theme=${themeParam}` : `5.html?session=${sessionId}`;
+            window.location.href = redirectUrl;
             
         } catch (e) {
             console.error(e);
