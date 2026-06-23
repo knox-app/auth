@@ -1,18 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <script>
-        (function() {
-            var params = new URLSearchParams(window.location.search);
-            var theme = params.get('theme');
-            if (theme === 'dark' || theme === 'light') {
-                document.documentElement.setAttribute('data-theme', theme);
-            }
-        })();
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PPLX EXMAIL</title>
+    <title>DARKTHME</title>
     <style>
         /* CSS Variables for Real-time Theme Switching */
         :root {
@@ -216,6 +207,15 @@
         <button id="nextBtn" class="next-btn" disabled>Next</button>
     </div>
 
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var theme = params.get('theme');
+            if (theme === 'dark' || theme === 'light') {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+        })();
+    </script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getFirestore, doc, updateDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
