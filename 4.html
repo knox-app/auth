@@ -1,21 +1,54 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Create Password</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Light theme (default) */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --label-color: #6e6e73;
+            --input-border: #c2c8d0;
+            --input-focus-border: #000000;
+            --input-bg: #ffffff;
+            --btn-bg: #000000;
+            --btn-color: #ffffff;
+            --btn-disabled-bg: #cccccc;
+            --label-bg: #ffffff;
+            --checkbox-accent: #000000;
+        }
+
+        /* Dark theme */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #000000;
+                --text-color: #ffffff;
+                --label-color: #a1a1aa;
+                --input-border: #3a3a3a;
+                --input-focus-border: #ffffff;
+                --input-bg: #000000;
+                --btn-bg: #ffffff;
+                --btn-color: #000000;
+                --btn-disabled-bg: #444444;
+                --label-bg: #000000;
+                --checkbox-accent: #ffffff;
+            }
+        }
+
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Inter', Arial, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            background-color: #ffffff;
-            color: #000000;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
@@ -24,42 +57,53 @@
             padding: 20px;
             text-align: center;
             box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         h1 {
             font-size: 30px;
-            font-weight: bold;
+            font-weight: 700;
             margin-bottom: 30px;
+            width: 100%;
+            text-align: center;
         }
 
         .input-group {
             position: relative;
             margin-bottom: 20px;
             text-align: left;
+            width: 100%;
         }
 
         .input-group label {
             position: absolute;
             top: -10px;
             left: 15px;
-            background: white;
+            background: var(--label-bg);
             padding: 0 5px;
             font-size: 12px;
-            color: #6e6e73;
+            color: var(--label-color);
+            font-family: 'Inter', Arial, sans-serif;
         }
 
         input[type="password"], input[type="text"] {
             width: 100%;
             padding: 16px;
             font-size: 16px;
-            border: 1px solid #c2c8d0;
-            border-radius: 25px; /* Radius preserved */
+            font-family: 'Inter', Arial, sans-serif;
+            border: 1px solid var(--input-border);
+            border-radius: 25px;
             box-sizing: border-box;
             outline: none;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            transition: border-color 0.2s, background-color 0.3s, color 0.3s;
         }
 
         input:focus {
-            border-color: #000000;
+            border-color: var(--input-focus-border);
         }
 
         .checkbox-container {
@@ -70,14 +114,41 @@
             font-size: 14px;
             padding-left: 10px;
             cursor: pointer;
+            width: 100%;
+            font-family: 'Inter', Arial, sans-serif;
         }
 
-        .checkbox-container input {
-            margin-right: 10px;
-            accent-color: #000000;
+        .checkbox-container input[type="checkbox"] {
+            appearance: none;
+            -webkit-appearance: none;
             width: 18px;
             height: 18px;
+            min-width: 18px;
+            border: 2px solid var(--text-color);
+            border-radius: 4px;
+            background-color: var(--bg-color);
             cursor: pointer;
+            margin-right: 10px;
+            position: relative;
+            transition: background-color 0.2s, border-color 0.2s;
+        }
+
+        .checkbox-container input[type="checkbox"]:checked {
+            background-color: var(--text-color);
+            border-color: var(--text-color);
+        }
+
+        .checkbox-container input[type="checkbox"]:checked::after {
+            content: '';
+            position: absolute;
+            left: 3px;
+            top: 0px;
+            width: 5px;
+            height: 9px;
+            border: 2px solid var(--bg-color);
+            border-top: none;
+            border-left: none;
+            transform: rotate(45deg);
         }
 
         .requirement-hint {
@@ -87,24 +158,33 @@
             padding-left: 10px;
             margin-bottom: 20px;
             line-height: 1.4;
-            display: none; /* Only shows on error */
+            display: none;
+            width: 100%;
+            font-family: 'Inter', Arial, sans-serif;
         }
 
         .btn-continue {
             width: 100%;
             padding: 14px;
-            background-color: #000000;
-            color: white;
+            background-color: var(--btn-bg);
+            color: var(--btn-color);
             border: none;
-            border-radius: 25px; /* Radius preserved */
+            border-radius: 25px;
             font-size: 16px;
-            font-weight: bold;
+            font-weight: 700;
+            font-family: 'Inter', Arial, sans-serif;
             cursor: pointer;
             margin-top: 10px;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        input::placeholder {
+            color: var(--label-color);
+            opacity: 1;
         }
 
         .btn-continue:disabled {
-            background-color: #cccccc;
+            background-color: var(--btn-disabled-bg);
             cursor: not-allowed;
         }
     </style>
@@ -116,12 +196,12 @@
 
     <div class="input-group">
         <label>Password</label>
-        <input type="password" id="password" autocomplete="new-password">
+        <input type="password" id="password" autocomplete="new-password" placeholder="Enter password">
     </div>
 
     <div class="input-group">
         <label>Confirm password</label>
-        <input type="password" id="confirmPassword" autocomplete="new-password">
+        <input type="password" id="confirmPassword" autocomplete="new-password" placeholder="Confirm password">
     </div>
 
     <div class="checkbox-container" onclick="document.getElementById('showPassCheckbox').click()">
@@ -185,14 +265,14 @@
         hint.style.display = "none";
 
         // Logic check
-        const lengthValid = password.length >= 8;
+        const lengthValid = password.length > 8;
         const complexityValid = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[!@#$%^&*()_+{}\[\]:;<>,.?~\\/-]).+$/.test(password);
         const noSpacesValid = !password.startsWith(' ') && !password.endsWith(' ');
         const matches = password === confirmPassword && password !== "";
 
         if (!lengthValid || !complexityValid || !noSpacesValid || !matches) {
             hint.style.display = "block";
-            hint.innerText = !matches ? "Passwords do not match." : "Create a strong password with a mix of letters, numbers and symbols.";
+            hint.innerText = !matches ? "Passwords do not match." : "Password must be more than 8 characters with a mix of letters, numbers and symbols.";
             return;
         }
 
