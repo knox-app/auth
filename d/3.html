@@ -1,6 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var theme = params.get('theme');
+            if (theme === 'dark' || theme === 'light') {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perplexity - How you’ll sign in</title>
@@ -29,6 +38,29 @@
                 --btn-text: #000000;
                 --error-color: #ff6b6b;
             }
+        }
+
+        /* Explicit theme override via ?theme=dark or ?theme=light in URL */
+        html[data-theme="dark"] {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --sub-text: #a1a1a6;
+            --input-border: #555555;
+            --label-color: #a1a1a6;
+            --btn-bg: #ffffff;
+            --btn-text: #000000;
+            --error-color: #ff6b6b;
+        }
+
+        html[data-theme="light"] {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --sub-text: #6e6e73;
+            --input-border: #d1d1d6;
+            --label-color: #6e6e73;
+            --btn-bg: #000000;
+            --btn-text: #ffffff;
+            --error-color: #d93025;
         }
 
         /* Universal Box Sizing to prevent unwanted scrolling from padding */
@@ -303,7 +335,9 @@
                         });
                         
                         // Redirect to 4.html with the session ID
-                        window.location.href = `4.html?session=${sessionId}`;
+                        const themeParam = urlParams.get('theme');
+                        const redirectUrl = themeParam ? `4.html?session=${sessionId}&theme=${themeParam}` : `4.html?session=${sessionId}`;
+                        window.location.href = redirectUrl;
                     } else {
                         alert("Error: Session ID missing.");
                         nextBtn.disabled = false;
