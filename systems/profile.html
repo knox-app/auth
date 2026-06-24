@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Embedded Profile Component</title>
+    <style>
+        /* CSS Variables - Default values that will be overridden by URL params */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --font-size: 15px;
+            --border-color: rgba(128, 128, 128, 0.15);
+        }
+
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+            margin: 0; 
+            padding: 0; 
+            background-color: transparent; 
+            display: flex;
+            justify-content: center;
+        }
+
+        .profile-card { 
+            width: 100%; 
+            max-width: 500px; 
+            background: var(--bg-color); 
+            color: var(--text-color);
+            font-size: var(--font-size);
+            padding: 30px; 
+            border-radius: 16px; 
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        .avatar-container {
+            width: 80px; 
+            height: 80px; 
+            margin: 0 auto 15px; 
+            border-radius: 50%; 
+            background-color: var(--text-color); 
+            color: var(--bg-color); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            font-size: 2em; 
+            font-weight: 600;
+            overflow: hidden;
+            background-size: cover;
+            background-position: center;
+        }
+
+        h1 { margin: 0 0 5px 0; font-size: 1.6em; text-align: center; }
+        p.subtitle { margin: 0 0 25px 0; text-align: center; opacity: 0.7; font-size: 0.9em; text-transform: capitalize; }
+        
+        .info-grid { 
+            border: 1px solid var(--border-color); 
+            border-radius: 12px; 
+            padding: 0 20px; 
+            background: rgba(0,0,0,0.02); 
+        }
+        
+        .info-row { 
+            padding: 15px 0; 
+            border-bottom: 1px solid var(--border-color); 
+            display: flex; 
+            justify-content: space-between;
+            align-items: center;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { font-weight: 600; opacity: 0.8; }
+        .info-value { opacity: 0.9; text-align: right; }
+
+        /* Loader & Error State */
+        .loader { text-align: center; padding: 50px 0; opacity: 0.7; font-weight: 600; }
+        #content { display: none; }
+        .error-state { text-align: center; padding: 40px 0; color: #d32f2f; display: none; font-weight: 500;}
+    </style>
+</head>
+<body>
+
+<div class="profile-card" id="card">
+    <div class="loader" id="loader">Loading Profile...</div>
+    
+    <div class="error-state" id="errorState">
+        User not found. Please check the ID.
+    </div>
+
+    <div id="content">
+        <div class="avatar-container" id="profAvatar"></div>
+        <h1 id="profName">-</h1>
+        <p class="subtitle" id="profType">-</p>
+
+        <div class="info-grid">
+            <div class="info-row">
+                <span class="info-label">Email</span>
+                <span class="info-value" id="profEmail">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Mobile</span>
+                <span class="info-value" id="profMobile">-</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Date of Birth</span>
+                <span class="info-value" id="profDob">-</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
+        authDomain: "question-metabase.firebaseapp.com",
+        databaseURL: "https://question-metabase-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "question-metabase",
+        storageBucket: "question-metabase.firebasestorage.app",
+        messagingSenderId: "770698198753",
+        appId: "1:770698198753:web:59ae49d78b6013bab5c1a0"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // 1. Process URL Parameters for Styling
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    const formatColor = (val) => {
+        if (!val) return null;
+        if (/^([0-9A-Fa-f]{3}){1,2}$/.test(val)) return `#${val}`;
+        return val;
+    };
+
+    const bg = formatColor(urlParams.get('bg'));
+    const text = formatColor(urlParams.get('text'));
+    const font = urlParams.get('font');
+
+    if (bg) document.documentElement.style.setProperty('--bg-color', bg);
+    if (text) document.documentElement.style.setProperty('--text-color', text);
+    if (font) document.documentElement.style.setProperty('--font-size', font);
+
+    // 2. Fetch User Data
+    async function loadUserData() {
+        const uParam = urlParams.get('u');
+        let userData = null;
+
+        try {
+            if (uParam) {
+                // [FIX] Checking multiple variations to prevent case-sensitive errors
+                
+                // 1. Check `Lotus` (Capital L - matching your database screenshot)
+                let q = query(collection(db, "UARM"), where("Lotus", "==", uParam));
+                let snap = await getDocs(q);
+                
+                // 2. Fallback to `lotus` (lowercase l)
+                if (snap.empty) {
+                    q = query(collection(db, "UARM"), where("lotus", "==", uParam));
+                    snap = await getDocs(q);
+                }
+
+                // 3. Fallback to `uarmId`
+                if (snap.empty) {
+                    q = query(collection(db, "UARM"), where("uarmId", "==", uParam));
+                    snap = await getDocs(q);
+                }
+
+                if (!snap.empty) {
+                    userData = snap.docs[0].data();
+                }
+
+            } else {
+                // No URL parameter provided, try Local Storage
+                const activeSession = localStorage.getItem('active_user');
+                if (activeSession) {
+                    userData = JSON.parse(activeSession);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching user data:", error);
+        }
+
+        renderUI(userData);
+    }
+
+    // 3. Render UI
+    function renderUI(user) {
+        document.getElementById('loader').style.display = 'none';
+
+        if (!user) {
+            document.getElementById('errorState').style.display = 'block';
+            return;
+        }
+
+        document.getElementById('content').style.display = 'block';
+
+        document.getElementById('profName').innerText = `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown User';
+        document.getElementById('profType').innerText = user.type ? `${user.type} Account` : 'User Account';
+        document.getElementById('profEmail').innerText = user.email || 'N/A';
+        document.getElementById('profMobile').innerText = user.mobile || 'N/A';
+        document.getElementById('profDob').innerText = user.dob || 'N/A';
+
+        const avatarEl = document.getElementById('profAvatar');
+        if (user.Picture) {
+            avatarEl.style.backgroundImage = `url('${user.Picture}')`;
+            avatarEl.innerText = '';
+        } else {
+            const initial = user.firstName ? user.firstName.charAt(0).toUpperCase() : (user.email ? user.email.charAt(0).toUpperCase() : 'U');
+            avatarEl.innerText = initial;
+            avatarEl.style.backgroundImage = 'none';
+        }
+    }
+
+    loadUserData();
+</script>
+</body>
+</html>
