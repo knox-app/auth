@@ -169,14 +169,12 @@
             } else if (themeParam === 'light') {
                 document.documentElement.setAttribute('data-theme', 'light');
             } else {
-                // Fallback to real-time device native theme
                 document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
             }
         }
 
         applyTheme();
 
-        // Listen for real-time changes in native device theme
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
             const urlParams = new URLSearchParams(window.location.search);
             if (!urlParams.has('theme')) {
@@ -193,7 +191,7 @@
         <p>Verifying account details.</p>
     </div>
 
-    <!-- 2. Email Collection Screen (For Commit/Kids) -->
+    <!-- 2. Email Collection Screen -->
     <div id="email-screen" class="container">
         <h1>Parental Consent</h1>
         <p>Please enter a parental email address to continue.</p>
@@ -214,24 +212,23 @@
         <p id="otp-subtitle">A temporary sign-in link has been sent to</p>
         
         <div class="otp-container">
-            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
-            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
-            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
-            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
-            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
-            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]">
+            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
+            <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric">
         </div>
         <div id="otp-error" class="error-msg">Invalid OTP. Please try again.</div>
         
         <button id="confirm-otp-btn" class="btn btn-primary">Confirm</button>
     </div>
 
-    <!-- Firebase SDK Implementation (v9 Modular) -->
+    <!-- Firebase SDK Implementation -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
             authDomain: "question-metabase.firebaseapp.com",
@@ -243,20 +240,17 @@
             measurementId: "G-6ZP1FPMKSJ"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // UI Elements
         const loadingScreen = document.getElementById('loading-screen');
         const emailScreen = document.getElementById('email-screen');
         const otpScreen = document.getElementById('otp-screen');
         
         let generatedOTP = "";
         let userEmail = "";
-        let globalUserData = null; // Store fetched data
+        let globalUserData = null; 
         
-        // URL Parameters
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session');
         const themeParam = urlParams.get('theme');
@@ -266,7 +260,6 @@
             throw new Error("No session ID");
         }
 
-        // --- Alphanumeric Generator ---
         function generateAlphanumeric(length) {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
             let result = '';
@@ -279,37 +272,34 @@
         // --- Main Data Migration Logic ---
         async function migrateDataAndRedirect(userData) {
             try {
-                // Generate secure keys
                 const lotusId = generateAlphanumeric(15);
                 const recoveryId = generateAlphanumeric(25);
-                
-                // UARM ID is now explicitly 25 characters
-                const newUarmId = generateAlphanumeric(25);
+                const newUarmId = generateAlphanumeric(25); // 25 digits for UARM
 
                 // Prepare updated document data for UARM
                 const uarmData = {
-                    ...userData,               // Copies all existing fields from ASPX Keys
+                    ...userData,               
                     lotus: lotusId,
                     recoveryId: recoveryId,
-                    uarmId: newUarmId,         // Saves the 25 char string in the document fields
+                    uarmId: newUarmId,         // Sets internal uarmId field
                     updatedAt: serverTimestamp()
                 };
 
-                // Update family field requirement if it was 'commit'
+                // ONLY update to 'commited' if it specifically was 'commit'. 
+                // If it was 'no' or 'workspace', it remains untouched.
                 if (userData.family === "commit") {
                     uarmData.family = "commited";
                 }
 
-                // 1. Write the new document into the "UARM" collection 
-                // newDocRef explicitly sets the Document ID to match `newUarmId`
+                // Write new document into "UARM" using newUarmId as Document ID
                 const newDocRef = doc(db, "UARM", newUarmId);
                 await setDoc(newDocRef, uarmData);
 
-                // 2. Delete the old document from "ASPX Keys" collection
+                // Delete old document from "ASPX Keys"
                 const oldDocRef = doc(db, "ASPX Keys", sessionId);
                 await deleteDoc(oldDocRef);
 
-                // 3. Redirect to 7.html passing the Lotus ID and theme
+                // Redirect to 7.html
                 let nextUrl = `7.html?lotus=${lotusId}`;
                 if (themeParam) {
                     nextUrl += `&theme=${themeParam}`;
@@ -325,7 +315,7 @@
             }
         }
 
-        // --- Routing based on family field ---
+        // --- Check User Type & Route ---
         async function checkUserType() {
             try {
                 const docRef = doc(db, "ASPX Keys", sessionId);
@@ -335,24 +325,18 @@
                     globalUserData = docSnap.data();
                     const familyType = globalUserData.family; 
 
-                    // Conditions logic as per request
+                    // If NO or WORKSPACE, do NOT ask for OTP. Immediately migrate.
                     if (familyType === "no" || familyType === "workspace") {
-                        // Bypass OTP entirely
                         await migrateDataAndRedirect(globalUserData);
                     } 
-                    else if (familyType === "commit" || familyType === "commited") {
-                        // Stop Loading, Start OTP flow
+                    // If COMMIT or KIDS, show OTP screen
+                    else if (familyType === "commit" || familyType === "commited" || globalUserData.type === "kids") {
                         loadingScreen.style.display = "none";
                         emailScreen.style.display = "block";
                     } 
                     else {
-                        // Fallback fallback just in case 'type' is kids but family missing
-                        if (globalUserData.type === "kids") {
-                            loadingScreen.style.display = "none";
-                            emailScreen.style.display = "block";
-                        } else {
-                            await migrateDataAndRedirect(globalUserData);
-                        }
+                        // Fallback fallback
+                        await migrateDataAndRedirect(globalUserData);
                     }
                 } else {
                     loadingScreen.innerHTML = "<h2>Error</h2><p>Session not found in database.</p>";
@@ -363,10 +347,9 @@
             }
         }
 
-        // Initiate Check On Load
         checkUserType();
 
-        // --- OTP FLOW: Send Mail ---
+        // --- OTP Mail Sending ---
         document.getElementById('send-otp-btn').addEventListener('click', () => {
             const emailInput = document.getElementById('parent-email').value;
             const errorMsg = document.getElementById('email-error');
@@ -379,13 +362,11 @@
             errorMsg.style.display = "none";
             userEmail = emailInput;
             
-            // Generate 6 digit OTP
             generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
 
             btn.disabled = true;
             btn.innerText = "Sending...";
 
-            // Send via EmailJS
             const templateParams = {
                 to_email: userEmail,
                 otp: generatedOTP
@@ -405,11 +386,50 @@
                 });
         });
 
-        // --- OTP FLOW: Verify & Trigger Migration ---
+        // --- Improved OTP Input Auto-Shifting ---
+        const otpInputs = document.querySelectorAll('.otp-input');
+        
+        otpInputs.forEach((input, index) => {
+            // Forward Movement (Typing a number)
+            input.addEventListener('input', function() {
+                this.value = this.value.replace(/[^0-9]/g, ''); // Enforce numbers only
+                if (this.value !== "") {
+                    if (index < otpInputs.length - 1) {
+                        otpInputs[index + 1].focus(); // Move to next box
+                    }
+                }
+            });
+
+            // Backward Movement (Backspace)
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && this.value === "") {
+                    if (index > 0) {
+                        otpInputs[index - 1].focus(); // Move to previous box
+                        otpInputs[index - 1].value = ""; // Clear previous box text
+                    }
+                }
+            });
+
+            // Handle Pasting a full 6-digit code
+            input.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
+                for (let i = 0; i < pastedData.length; i++) {
+                    if (i < otpInputs.length) {
+                        otpInputs[i].value = pastedData[i];
+                    }
+                }
+                if (pastedData.length > 0) {
+                    const focusIndex = Math.min(pastedData.length, otpInputs.length - 1);
+                    otpInputs[focusIndex].focus();
+                }
+            });
+        });
+
+        // --- Verify OTP & Migrate Data ---
         document.getElementById('confirm-otp-btn').addEventListener('click', async () => {
-            const inputs = document.querySelectorAll('.otp-input');
             let enteredOTP = "";
-            inputs.forEach(input => enteredOTP += input.value);
+            otpInputs.forEach(input => enteredOTP += input.value);
             
             const errorMsg = document.getElementById('otp-error');
             const btn = document.getElementById('confirm-otp-btn');
@@ -419,30 +439,12 @@
                 btn.disabled = true;
                 btn.innerText = "Verifying & Migrating...";
 
-                // Since OTP is correct, initiate data migration
                 await migrateDataAndRedirect(globalUserData);
 
             } else {
                 errorMsg.style.display = "block";
             }
         });
-
-        // --- Helper: OTP Input Auto-Focus ---
-        const otpInputs = document.querySelectorAll('.otp-input');
-        otpInputs.forEach((input, index) => {
-            input.addEventListener('keyup', (e) => {
-                if (e.key >= 0 && e.key <= 9) {
-                    if (index < otpInputs.length - 1) {
-                        otpInputs[index + 1].focus();
-                    }
-                } else if (e.key === 'Backspace') {
-                    if (index > 0 && input.value === "") {
-                        otpInputs[index - 1].focus();
-                    }
-                }
-            });
-        });
-
     </script>
 </body>
 </html>
