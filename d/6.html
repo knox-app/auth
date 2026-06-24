@@ -283,16 +283,15 @@
                 const lotusId = generateAlphanumeric(15);
                 const recoveryId = generateAlphanumeric(25);
                 
-                // Ensure uarmId is exactly 20 digits alphanumeric
-                const newUarmId = generateAlphanumeric(20);
+                // UARM ID is now explicitly 25 characters
+                const newUarmId = generateAlphanumeric(25);
 
                 // Prepare updated document data for UARM
-                // (...userData ensures existing fields are kept, new fields below override/add)
                 const uarmData = {
-                    ...userData,               
+                    ...userData,               // Copies all existing fields from ASPX Keys
                     lotus: lotusId,
                     recoveryId: recoveryId,
-                    uarmId: newUarmId,  // The field `uarmId` matches the doc ID perfectly
+                    uarmId: newUarmId,         // Saves the 25 char string in the document fields
                     updatedAt: serverTimestamp()
                 };
 
@@ -302,7 +301,7 @@
                 }
 
                 // 1. Write the new document into the "UARM" collection 
-                // Using the exact 20 character string as the Document ID
+                // newDocRef explicitly sets the Document ID to match `newUarmId`
                 const newDocRef = doc(db, "UARM", newUarmId);
                 await setDoc(newDocRef, uarmData);
 
