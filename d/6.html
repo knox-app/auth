@@ -282,14 +282,17 @@
                 // Generate secure keys
                 const lotusId = generateAlphanumeric(15);
                 const recoveryId = generateAlphanumeric(25);
+                
+                // Ensure uarmId is exactly 20 digits alphanumeric
                 const newUarmId = generateAlphanumeric(20);
 
                 // Prepare updated document data for UARM
+                // (...userData ensures existing fields are kept, new fields below override/add)
                 const uarmData = {
-                    ...userData,               // Copies all existing fields from ASPX Keys
+                    ...userData,               
                     lotus: lotusId,
                     recoveryId: recoveryId,
-                    uarmId: newUarmId,
+                    uarmId: newUarmId,  // The field `uarmId` matches the doc ID perfectly
                     updatedAt: serverTimestamp()
                 };
 
@@ -298,7 +301,8 @@
                     uarmData.family = "commited";
                 }
 
-                // 1. Write the new document into the "UARM" collection
+                // 1. Write the new document into the "UARM" collection 
+                // Using the exact 20 character string as the Document ID
                 const newDocRef = doc(db, "UARM", newUarmId);
                 await setDoc(newDocRef, uarmData);
 
