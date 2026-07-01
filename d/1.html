@@ -341,8 +341,8 @@ async function submitData() {
         await setDoc(
             doc(db, "ASPX Keys", session),
             {
-                firstName,
-                lastName,
+                "First Name",
+                "Last Name",
                 type,
                 family: familyValue,
                 continue: continueUrl || null,
