@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DARKTHME</title>
+    <title>DARKTHEME</title>
     <style>
         /* CSS Variables for Real-time Theme Switching */
         :root {
@@ -65,7 +65,7 @@
             flex-direction: column;
             align-items: center;
             justify-content: center; 
-            min-height: 100vh; /* Changed from height to min-height */
+            min-height: 100vh;
             margin: 0;
             padding: 40px 20px;
             background-color: var(--bg-color);
@@ -257,9 +257,9 @@
                     const docSnap = await getDoc(docRef);
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        type = data.type;
-                        if (!firstName) firstName = data.firstName;
-                        if (!gender) gender = data.gender;
+                        type = data["Type"];
+                        if (!firstName) firstName = data["First Name"];
+                        if (!gender) gender = data["Gender"];
                     }
                 } catch (err) {
                     console.error("Failed to fetch session data for styling:", err);
@@ -315,8 +315,8 @@
             instructionText.style.display = 'block';
 
             try {
-                // Check if username is taken
-                const q = query(collection(db, "ASPX Keys"), where("email", "==", fullEmail));
+                // Check if username is taken (using "Email" instead of lowercase "email")
+                const q = query(collection(db, "ASPX Keys"), where("Email", "==", fullEmail));
                 const querySnapshot = await getDocs(q);
 
                 if (!querySnapshot.empty) {
@@ -330,14 +330,12 @@
                     if (sessionId) {
                         const docRef = doc(db, "ASPX Keys", sessionId);
                         await updateDoc(docRef, {
-                            email: fullEmail,
+                            "Email": fullEmail,
                             updatedAt: new Date().toLocaleString('en-US', { timeZone: 'UTC', hour12: true }) + " UTC+5:30"
                         });
                         
-                        // Redirect to 4.html with the session ID
-                        const themeParam = urlParams.get('theme');
-                        const redirectUrl = themeParam ? `4.html?session=${sessionId}&theme=${themeParam}` : `4.html?session=${sessionId}`;
-                        window.location.href = redirectUrl;
+                        // Redirect to 4.html with only the session ID
+                        window.location.href = `4.html?session=${sessionId}`;
                     } else {
                         alert("Error: Session ID missing.");
                         nextBtn.disabled = false;
