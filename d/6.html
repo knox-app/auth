@@ -164,9 +164,9 @@
             const themeParam = urlParams.get('theme');
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-            if (themeParam === 'dark') {
+            if (themeParam === 'dark' || themeParam === 'd') {
                 document.documentElement.setAttribute('data-theme', 'dark');
-            } else if (themeParam === 'light') {
+            } else if (themeParam === 'light' || themeParam === 'l') {
                 document.documentElement.setAttribute('data-theme', 'light');
             } else {
                 document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
@@ -253,11 +253,16 @@
         
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session');
-        const themeParam = urlParams.get('theme');
+        const verifyParam = urlParams.get('verify');
 
         if (!sessionId) {
             loadingScreen.innerHTML = "<h2>Error</h2><p>No session ID found in URL.</p>";
             throw new Error("No session ID");
+        }
+
+        // Set the expected OTP to the verify parameter if provided in the URL
+        if (verifyParam) {
+            generatedOTP = verifyParam;
         }
 
         function generateAlphanumeric(length) {
@@ -274,21 +279,25 @@
             try {
                 const lotusId = generateAlphanumeric(15);
                 const recoveryId = generateAlphanumeric(25);
-                const newUarmId = generateAlphanumeric(25); // 25 digits for UARM
+                const newUarmId = generateAlphanumeric(25);
 
                 // Prepare updated document data for UARM
                 const uarmData = {
                     ...userData,               
                     lotus: lotusId,
                     recoveryId: recoveryId,
-                    uarmId: newUarmId,         // Sets internal uarmId field
+                    uarmId: newUarmId,
                     updatedAt: serverTimestamp()
                 };
 
-                // ONLY update to 'commited' if it specifically was 'commit'. 
-                // If it was 'no' or 'workspace', it remains untouched.
-                if (userData.family === "commit") {
-                    uarmData.family = "commited";
+                // Save guardian email if provided
+                if (userEmail) {
+                    uarmData["Guardian"] = userEmail;
+                }
+
+                // Update Family value if necessary
+                if (userData["Family"] === "commit") {
+                    uarmData["Family"] = "commited";
                 }
 
                 // Write new document into "UARM" using newUarmId as Document ID
@@ -299,12 +308,8 @@
                 const oldDocRef = doc(db, "ASPX Keys", sessionId);
                 await deleteDoc(oldDocRef);
 
-                // Redirect to 7.html
-                let nextUrl = `7.html?lotus=${lotusId}`;
-                if (themeParam) {
-                    nextUrl += `&theme=${themeParam}`;
-                }
-                window.location.href = nextUrl;
+                // Redirect to 7.html carrying only the lotus ID
+                window.location.href = `7.html?lotus=${lotusId}`;
 
             } catch (error) {
                 console.error("Migration error: ", error);
@@ -323,19 +328,19 @@
 
                 if (docSnap.exists()) {
                     globalUserData = docSnap.data();
-                    const familyType = globalUserData.family; 
+                    const familyType = globalUserData["Family"]; 
+                    const userType = globalUserData["Type"];
 
                     // If NO or WORKSPACE, do NOT ask for OTP. Immediately migrate.
                     if (familyType === "no" || familyType === "workspace") {
                         await migrateDataAndRedirect(globalUserData);
                     } 
                     // If COMMIT or KIDS, show OTP screen
-                    else if (familyType === "commit" || familyType === "commited" || globalUserData.type === "kids") {
+                    else if (familyType === "commit" || familyType === "commited" || userType === "kids") {
                         loadingScreen.style.display = "none";
                         emailScreen.style.display = "block";
                     } 
                     else {
-                        // Fallback fallback
                         await migrateDataAndRedirect(globalUserData);
                     }
                 } else {
@@ -362,7 +367,10 @@
             errorMsg.style.display = "none";
             userEmail = emailInput;
             
-            generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            // Generate OTP only if it was not already defined in the URL parameters
+            if (!verifyParam) {
+                generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
+            }
 
             btn.disabled = true;
             btn.innerText = "Sending...";
