@@ -347,20 +347,8 @@ async function submitData() {
             }
         );
 
-        // Build redirect URL preserving all parameter values
-        const redirectParams = new URLSearchParams();
-        redirectParams.set("session", session);
-        if (type) {
-            redirectParams.set("type", type);
-        }
-        if (continueUrl) {
-            redirectParams.set("continue", continueUrl);
-        }
-        if (theme) {
-            redirectParams.set("theme", theme);
-        }
-
-        window.location.href = `2.html?${redirectParams.toString()}`;
+        // Redirect transferring only the session ID
+        window.location.href = `2.html?session=${session}`;
 
     } catch (error) {
         console.error("Error:", error);
