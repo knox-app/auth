@@ -32,7 +32,7 @@
             --text-secondary: #aaaaaa;
             --input-border: #555555;
             --input-focus: #ffffff;
-            --input-bg: #000000; /* Changed from #1e1e1e to black */
+            --input-bg: #000000; /* Set to black to match the background */
             --btn-bg: #ffffff;
             --btn-text: #000000;
             --btn-hover: #e0e0e0;
@@ -341,7 +341,7 @@ async function submitData() {
                 "First Name": firstName,
                 "Last Name": lastName,
                 "Type": type,
-                family: familyValue,
+                "Family": familyValue,
                 continue: continueUrl || null,
                 timestamp: new Date()
             }
