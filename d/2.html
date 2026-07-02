@@ -24,20 +24,18 @@
             --overlay-bg: rgba(0, 0, 0, 0.5);
         }
 
-        @media (prefers-color-scheme: dark) {
-            :root {
-                --bg-color: #000000;
-                --text-primary: #ffffff;
-                --text-secondary: #aaaaaa;
-                --input-border: #555555;
-                --input-focus: #ffffff;
-                --input-bg: #1e1e1e;
-                --btn-bg: #ffffff;
-                --btn-text: #000000;
-                --btn-hover: #e0e0e0;
-                --error-text: #ff6b6b;
-                --overlay-bg: rgba(255, 255, 255, 0.1);
-            }
+        body.dark {
+            --bg-color: #000000;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --input-border: #555555;
+            --input-focus: #ffffff;
+            --input-bg: #000000; /* Sets inside input box background to black */
+            --btn-bg: #ffffff;
+            --btn-text: #000000;
+            --btn-hover: #e0e0e0;
+            --error-text: #ff6b6b;
+            --overlay-bg: rgba(255, 255, 255, 0.1);
         }
 
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
@@ -203,7 +201,36 @@
 
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session');
+    let theme = urlParams.get("theme") ? urlParams.get("theme").toLowerCase() : null;
 
+    /* ================= LIVE THEME ================= */
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    function applyTheme() {
+        if (theme === "dark" || theme === "d") {
+            document.body.classList.add("dark");
+            return;
+        }
+        if (theme === "light" || theme === "l") {
+            document.body.classList.remove("dark");
+            return;
+        }
+        if (mediaQuery.matches) {
+            document.body.classList.add("dark");
+        } else {
+            document.body.classList.remove("dark");
+        }
+    }
+
+    applyTheme();
+
+    mediaQuery.addEventListener("change", () => {
+        if (!theme) {
+            applyTheme();
+        }
+    });
+
+    /* ================= FIREBASE LOGIC ================= */
     let currentType = "";
     let userFirstName = "";
     let continueUrl = "";
@@ -213,8 +240,8 @@
         getDoc(docRef).then((docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
-                currentType = data.type;
-                userFirstName = data.firstName; 
+                currentType = data["Type"];
+                userFirstName = data["First Name"]; 
                 continueUrl = data.continue || "/"; 
 
                 const heading = document.getElementById("main-heading");
@@ -309,7 +336,7 @@
             modalBtnB.innerText = "Switch to Personal Account";
             
             modalBtnA.onclick = () => saveAndProceed({}); 
-            modalBtnB.onclick = () => saveAndProceed({ type: "personal", family: "no" }); 
+            modalBtnB.onclick = () => saveAndProceed({ "Type": "personal", "Family": "no" }); 
             
             modalOverlay.style.display = 'flex';
             return;
@@ -321,7 +348,7 @@
             modalBtnA.innerText = "Switch to Kids Account";
             modalBtnB.innerText = "Cancel";
             
-            modalBtnA.onclick = () => saveAndProceed({ type: "kids", family: "commit database" });
+            modalBtnA.onclick = () => saveAndProceed({ "Type": "kids", "Family": "commit database" });
             modalBtnB.onclick = async () => {
                 try {
                     await deleteDoc(docRef);
@@ -341,8 +368,8 @@
     async function saveAndProceed(additionalData) {
         try {
             const baseData = {
-                dob: getFormattedDate(),
-                gender: document.getElementById('gender').value,
+                "Date of Birth": getFormattedDate(),
+                "Gender": document.getElementById('gender').value,
                 updatedAt: serverTimestamp()
             };
             
