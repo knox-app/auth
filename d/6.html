@@ -281,12 +281,19 @@
                 const recoveryId = generateAlphanumeric(25);
                 const newUarmId = generateAlphanumeric(25);
 
+                // Copy userData to prepare clean collection payload
+                const cleanUserData = { ...userData };
+                
+                // Explicitly delete 'continue' key so it does not transfer to UARM
+                delete cleanUserData.continue;
+                delete cleanUserData["continue"];
+
                 // Prepare updated document data for UARM
                 const uarmData = {
-                    ...userData,               
-                    lotus: lotusId,
-                    recoveryId: recoveryId,
-                    uarmId: newUarmId,
+                    ...cleanUserData,               
+                    "Lotus": lotusId,
+                    "Recovery ID": recoveryId,
+                    "UARMS ID": newUarmId,
                     updatedAt: serverTimestamp()
                 };
 
@@ -296,7 +303,7 @@
                 }
 
                 // Update Family value if necessary
-                if (userData["Family"] === "commit") {
+                if (cleanUserData["Family"] === "commit") {
                     uarmData["Family"] = "commited";
                 }
 
@@ -304,12 +311,12 @@
                 const newDocRef = doc(db, "UARM", newUarmId);
                 await setDoc(newDocRef, uarmData);
 
-                // Delete old document from "ASPX Keys"
+                // Delete old document from "ASPX Keys" completely
                 const oldDocRef = doc(db, "ASPX Keys", sessionId);
                 await deleteDoc(oldDocRef);
 
-                // Redirect to 7.html carrying only the lotus ID
-                window.location.href = `7.html?lotus=${lotusId}`;
+                // Redirect to 7.html carrying only the capitalized Lotus parameter
+                window.location.href = `7.html?Lotus=${lotusId}`;
 
             } catch (error) {
                 console.error("Migration error: ", error);
