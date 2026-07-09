@@ -206,7 +206,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getFirestore, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { getFirestore, doc, getDoc, updateDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
@@ -254,20 +254,63 @@
             submitBtn.disabled = true;
             submitBtn.innerText = "Processing...";
 
-            const docRef = doc(db, "ASPX Keys", sessionId);
+            // 1. Get the current session document from "ASPX Keys" to identify the account Type
+            const aspxDocRef = doc(db, "ASPX Keys", sessionId);
+            const aspxSnap = await getDoc(aspxDocRef);
 
-            await updateDoc(docRef, {
+            if (!aspxSnap.exists()) {
+                hint.style.display = "block";
+                hint.innerText = "Session not found.";
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Continue";
+                return;
+            }
+
+            const sessionData = aspxSnap.data();
+            const rawType = sessionData["Type"] || sessionData["type"] || "";
+            const normalizedType = rawType.trim().toLowerCase();
+            const isBypassType = normalizedType === "kids" || normalizedType === "business" || normalizedType === "busniess";
+
+            // 2. If NOT an allowed bypass type, perform a fast check on the "UARM" collection
+            if (!isBypassType) {
+                // Using limit(1) makes the query execution fast as it stops on the first match found
+                const uarmQuery = query(
+                    collection(db, "UARM"), 
+                    where("Phone Number", "==", phoneValue),
+                    limit(1)
+                );
+                const querySnapshot = await getDocs(uarmQuery);
+                
+                let isAlreadyUsed = false;
+                querySnapshot.forEach((existingDoc) => {
+                    // Avoid flagging if the matching record is the current session itself
+                    if (existingDoc.id !== sessionId) {
+                        isAlreadyUsed = true;
+                    }
+                });
+
+                if (isAlreadyUsed) {
+                    hint.style.display = "block";
+                    hint.innerText = "This phone number is already registered to another account.";
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Continue";
+                    return;
+                }
+            }
+
+            // 3. Update the phone number field on ASPX Keys
+            await updateDoc(aspxDocRef, {
                 "Phone Number": phoneValue,
                 updatedAt: new Date().toLocaleString() + " UTC+5:30"
             });
 
-            // Redirect carrying only the session ID
+            // Redirect carrying the session ID
             window.location.href = `6.html?session=${sessionId}`;
             
         } catch (e) {
             console.error(e);
             hint.style.display = "block";
-            hint.innerText = "Session not found or connection error.";
+            hint.innerText = "Connection error. Please try again.";
             submitBtn.disabled = false;
             submitBtn.innerText = "Continue";
         }
