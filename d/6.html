@@ -188,7 +188,7 @@
     <!-- 1. Loading Screen -->
     <div id="loading-screen" class="container">
         <h2>Please wait...</h2>
-        <p>Verifying account details.</p>
+        <p id="loading-text">Verifying account details.</p>
     </div>
 
     <!-- 2. Email Collection Screen -->
@@ -244,6 +244,7 @@
         const db = getFirestore(app);
 
         const loadingScreen = document.getElementById('loading-screen');
+        const loadingText = document.getElementById('loading-text');
         const emailScreen = document.getElementById('email-screen');
         const otpScreen = document.getElementById('otp-screen');
         
@@ -251,18 +252,24 @@
         let userEmail = "";
         let globalUserData = null; 
         
+        // Match query parameters configured in the email template
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session');
-        const verifyParam = urlParams.get('verify');
+        const codeParam = urlParams.get('code');       // Received from OTP or Magic Link
+        const pemailParam = urlParams.get('pemail');   // Received parent email
+        const apiParam = urlParams.get('api');         // Action validator ("auth")
 
         if (!sessionId) {
             loadingScreen.innerHTML = "<h2>Error</h2><p>No session ID found in URL.</p>";
             throw new Error("No session ID");
         }
 
-        // Set the expected OTP to the verify parameter if provided in the URL
-        if (verifyParam) {
-            generatedOTP = verifyParam;
+        // Apply parameters if they exist in the incoming URL
+        if (codeParam) {
+            generatedOTP = codeParam;
+        }
+        if (pemailParam) {
+            userEmail = pemailParam;
         }
 
         function generateAlphanumeric(length) {
@@ -338,6 +345,13 @@
                     const familyType = globalUserData["Family"]; 
                     const userType = globalUserData["Type"];
 
+                    // Magic Link Check: If matching credentials are in the URL, verify and migrate directly
+                    if (apiParam === "auth" && codeParam && codeParam === generatedOTP) {
+                        loadingText.innerText = "Authenticating and migrating session...";
+                        await migrateDataAndRedirect(globalUserData);
+                        return;
+                    }
+
                     // If NO or WORKSPACE, do NOT ask for OTP. Immediately migrate.
                     if (familyType === "no" || familyType === "workspace") {
                         await migrateDataAndRedirect(globalUserData);
@@ -375,16 +389,23 @@
             userEmail = emailInput;
             
             // Generate OTP only if it was not already defined in the URL parameters
-            if (!verifyParam) {
+            if (!codeParam) {
                 generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
             }
 
             btn.disabled = true;
             btn.innerText = "Sending...";
 
+            // Dynamically construct the Magic Link pointing to the current file path (local or hosted)
+            const currentPath = window.location.href.split('?')[0]; 
+            const dynamicMagicLink = `${currentPath}?session=${encodeURIComponent(sessionId)}&code=${encodeURIComponent(generatedOTP)}&pemail=${encodeURIComponent(userEmail)}&api=auth`;
+
             const templateParams = {
+                session: sessionId,
+                otp: generatedOTP,
+                email: userEmail,
                 to_email: userEmail,
-                otp: generatedOTP
+                magic_link: dynamicMagicLink // This populates {{magic_link}} dynamically!
             };
 
             emailjs.send("service_63mnm5a", "template_qxz1wka", templateParams)
