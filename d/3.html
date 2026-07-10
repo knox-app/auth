@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DARKTHEME</title>
+    <title>Phone Number Verification</title>
     <style>
         /* CSS Variables for Real-time Theme Switching */
         :root {
@@ -218,7 +218,7 @@
     </script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getFirestore, doc, updateDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, updateDoc, getDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
@@ -315,11 +315,34 @@
             instructionText.style.display = 'block';
 
             try {
-                // Check if username is taken (using "Email" instead of lowercase "email")
-                const q = query(collection(db, "ASPX Keys"), where("Email", "==", fullEmail));
-                const querySnapshot = await getDocs(q);
+                // Query both collections in parallel using limit(1) for speed
+                const aspxQuery = query(collection(db, "ASPX Keys"), where("Email", "==", fullEmail), limit(1));
+                const uarmQuery = query(collection(db, "UARM"), where("Email", "==", fullEmail), limit(1));
 
-                if (!querySnapshot.empty) {
+                const [aspxSnapshot, uarmSnapshot] = await Promise.all([
+                    getDocs(aspxQuery),
+                    getDocs(uarmQuery)
+                ]);
+
+                let isEmailTaken = false;
+
+                // Check "ASPX Keys" results
+                aspxSnapshot.forEach((doc) => {
+                    if (doc.id !== sessionId) {
+                        isEmailTaken = true;
+                    }
+                });
+
+                // Check "UARM" results if not already found taken
+                if (!isEmailTaken) {
+                    uarmSnapshot.forEach((doc) => {
+                        if (doc.id !== sessionId) {
+                            isEmailTaken = true;
+                        }
+                    });
+                }
+
+                if (isEmailTaken) {
                     errorMsg.innerText = "That username is taken. Try another.";
                     errorMsg.style.display = 'block';
                     instructionText.style.display = 'none';
