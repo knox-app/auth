@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Username</title>
+    <style>
+        /* CSS Variables for Real-time Theme Switching */
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --sub-text: #6e6e73;
+            --input-border: #d1d1d6;
+            --label-color: #6e6e73;
+            --btn-bg: #000000;
+            --btn-text: #ffffff;
+            --error-color: #d93025;
+        }
+
+        /* Dark Mode Override (Updates instantly without reload) */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #000000;
+                --text-color: #ffffff;
+                --sub-text: #a1a1a6;
+                --input-border: #555555;
+                --label-color: #a1a1a6;
+                --btn-bg: #ffffff;
+                --btn-text: #000000;
+                --error-color: #ff6b6b;
+            }
+        }
+
+        /* Explicit theme override via ?theme=dark or ?theme=light in URL */
+        html[data-theme="dark"] {
+            --bg-color: #000000;
+            --text-color: #ffffff;
+            --sub-text: #a1a1a6;
+            --input-border: #555555;
+            --label-color: #a1a1a6;
+            --btn-bg: #ffffff;
+            --btn-text: #000000;
+            --error-color: #ff6b6b;
+        }
+
+        html[data-theme="light"] {
+            --bg-color: #ffffff;
+            --text-color: #000000;
+            --sub-text: #6e6e73;
+            --input-border: #d1d1d6;
+            --label-color: #6e6e73;
+            --btn-bg: #000000;
+            --btn-text: #ffffff;
+            --error-color: #d93025;
+        }
+
+        /* Universal Box Sizing to prevent unwanted scrolling from padding */
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; 
+            min-height: 100vh;
+            margin: 0;
+            padding: 40px 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background-color 0.3s, color 0.3s;
+            overflow-y: auto; /* Only scroll if screen is extremely tiny */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-align: center;
+            /* Force text to max 2 lines */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sub-text {
+            color: var(--sub-text);
+            font-size: 16px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 5px;
+            text-align: left;
+        }
+
+        label {
+            position: absolute;
+            top: -10px;
+            left: 12px;
+            background: var(--bg-color);
+            padding: 0 4px;
+            font-size: 12px;
+            color: var(--label-color);
+            z-index: 1;
+            transition: background 0.3s;
+        }
+
+        .input-wrapper {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--input-border);
+            border-radius: 24px;
+            padding: 12px 16px;
+            height: 56px;
+            background: var(--bg-color);
+            transition: border-color 0.3s, background 0.3s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: var(--text-color);
+            border-width: 2px;
+        }
+
+        input {
+            border: none;
+            outline: none;
+            font-size: 17px;
+            width: 100%;
+            background: transparent;
+            color: var(--text-color);
+        }
+
+        .domain-suffix {
+            color: #8e8e93;
+            font-size: 17px;
+            margin-left: 4px;
+            white-space: nowrap;
+        }
+
+        .instruction-text {
+            font-size: 13px;
+            color: var(--sub-text);
+            text-align: left;
+            margin-top: 8px;
+            margin-left: 5px;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 14px;
+            margin-top: 8px;
+            display: none;
+            text-align: left;
+            margin-left: 5px;
+        }
+
+        .next-btn {
+            width: 100%;
+            background-color: var(--btn-bg);
+            color: var(--btn-text);
+            border: none;
+            border-radius: 40px;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 500;
+            margin-top: 30px;
+            cursor: pointer;
+            transition: opacity 0.2s, background-color 0.3s, color 0.3s;
+        }
+
+        .next-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 id="mainTitle">How you’ll sign in</h1>
+        <p id="subTitle" class="sub-text">Create an email address for signing in to your Perplexity Account</p>
+
+        <div class="input-group">
+            <label>Username</label>
+            <div class="input-wrapper">
+                <input type="text" id="usernameInput" placeholder="Username" autocomplete="off">
+                <span class="domain-suffix">@perplexity.com</span>
+            </div>
+            <div id="instruction" class="instruction-text">You can use letters, numbers & periods</div>
+            <div id="errorMsg" class="error-message">That username is taken. Try another.</div>
+        </div>
+
+        <button id="nextBtn" class="next-btn" disabled>Next</button>
+    </div>
+
+    <script>
+        (function() {
+            var params = new URLSearchParams(window.location.search);
+            var theme = params.get('theme');
+            if (theme === 'dark' || theme === 'light') {
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+        })();
+    </script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, updateDoc, getDoc, collection, query, where, getDocs, limit } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
+            authDomain: "question-metabase.firebaseapp.com",
+            databaseURL: "https://question-metabase-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "question-metabase",
+            storageBucket: "question-metabase.firebasestorage.app",
+            messagingSenderId: "770698198753",
+            appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
+            measurementId: "G-6ZP1FPMKSJ"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const usernameInput = document.getElementById('usernameInput');
+        const nextBtn = document.getElementById('nextBtn');
+        const errorMsg = document.getElementById('errorMsg');
+        const instructionText = document.getElementById('instruction');
+        const mainTitle = document.getElementById('mainTitle');
+        const subTitle = document.getElementById('subTitle');
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const sessionId = urlParams.get('session');
+        
+        // Dynamic Text Setup based on "kids" type
+        async function configurePageContent() {
+            let type = urlParams.get('type');
+            let firstName = urlParams.get('firstName') || urlParams.get('name');
+            let gender = urlParams.get('gender');
+
+            // Fallback: If not passed via URL, check the Firestore database doc linked to sessionId
+            if (!type && sessionId) {
+                try {
+                    const docRef = doc(db, "ASPX Keys", sessionId);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                        const data = docSnap.data();
+                        type = data["Type"];
+                        if (!firstName) firstName = data["First Name"];
+                        if (!gender) gender = data["Gender"];
+                    }
+                } catch (err) {
+                    console.error("Failed to fetch session data for styling:", err);
+                }
+            }
+
+            // Apply updates if type is kids
+            if (type === 'kids') {
+                const nameDisplay = firstName || 'User';
+                const gndr = (gender || 'male').toLowerCase();
+                
+                const subject = gndr === 'female' ? 'She' : 'He';
+                const possessive = gndr === 'female' ? 'her' : 'his';
+
+                // Use <br> to ensure it cleanly wraps to two lines
+                mainTitle.innerHTML = `Choose how<br>${nameDisplay} will sign in`;
+                subTitle.innerText = `${subject} will use this email to sign in to ${possessive} Perplexity Account`;
+            }
+        }
+        
+        configurePageContent();
+
+        // Validation - Allow typing anything, but flag errors if symbols are used
+        usernameInput.addEventListener('input', (e) => {
+            const val = e.target.value.toLowerCase();
+            const isValid = /^[a-z0-9.]+$/.test(val);
+
+            if (val.length === 0) {
+                errorMsg.style.display = 'none';
+                instructionText.style.display = 'block';
+                nextBtn.disabled = true;
+            } else if (!isValid) {
+                errorMsg.innerText = "Only letters (A-Z), numbers (0-9), and periods (.) are allowed.";
+                errorMsg.style.display = 'block';
+                instructionText.style.display = 'none';
+                nextBtn.disabled = true; // Disable Next until they fix it
+            } else {
+                errorMsg.style.display = 'none';
+                instructionText.style.display = 'block';
+                nextBtn.disabled = false; // Enable if valid
+            }
+        });
+
+        // Logic for handling the "Next" action
+        async function handleNext() {
+            const username = usernameInput.value.toLowerCase().trim();
+            if (!username || !/^[a-z0-9.]+$/.test(username)) return;
+
+            const fullEmail = username + "@perplexity.com";
+            nextBtn.disabled = true;
+            nextBtn.innerText = "Processing...";
+            errorMsg.style.display = 'none';
+            instructionText.style.display = 'block';
+
+            try {
+                // Query both collections in parallel using limit(1) for speed
+                const aspxQuery = query(collection(db, "ASPX Keys"), where("Email", "==", fullEmail), limit(1));
+                const uarmQuery = query(collection(db, "UARM"), where("Email", "==", fullEmail), limit(1));
+
+                const [aspxSnapshot, uarmSnapshot] = await Promise.all([
+                    getDocs(aspxQuery),
+                    getDocs(uarmQuery)
+                ]);
+
+                let isEmailTaken = false;
+
+                // Check "ASPX Keys" results
+                aspxSnapshot.forEach((doc) => {
+                    if (doc.id !== sessionId) {
+                        isEmailTaken = true;
+                    }
+                });
+
+                // Check "UARM" results if not already found taken
+                if (!isEmailTaken) {
+                    uarmSnapshot.forEach((doc) => {
+                        if (doc.id !== sessionId) {
+                            isEmailTaken = true;
+                        }
+                    });
+                }
+
+                if (isEmailTaken) {
+                    errorMsg.innerText = "That username is taken. Try another.";
+                    errorMsg.style.display = 'block';
+                    instructionText.style.display = 'none';
+                    nextBtn.disabled = false;
+                    nextBtn.innerText = "Next";
+                } else {
+                    // If available, update database and redirect
+                    if (sessionId) {
+                        const docRef = doc(db, "ASPX Keys", sessionId);
+                        await updateDoc(docRef, {
+                            "Email": fullEmail,
+                            updatedAt: new Date().toLocaleString('en-US', { timeZone: 'UTC', hour12: true }) + " UTC+5:30"
+                        });
+                        
+                        // Redirect to 4.html with only the session ID
+                        window.location.href = `4.html?session=${sessionId}`;
+                    } else {
+                        alert("Error: Session ID missing.");
+                        nextBtn.disabled = false;
+                        nextBtn.innerText = "Next";
+                    }
+                }
+            } catch (error) {
+                console.error("Database Error:", error);
+                nextBtn.disabled = false;
+                nextBtn.innerText = "Next";
+            }
+        }
+
+        // Click event
+        nextBtn.addEventListener('click', handleNext);
+
+        // Enter key event
+        usernameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !nextBtn.disabled) {
+                handleNext();
+            }
+        });
+    </script>
+</body>
+</html>
