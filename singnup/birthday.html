@@ -376,7 +376,7 @@
             const finalData = { ...baseData, ...additionalData };
 
             await updateDoc(docRef, finalData);
-            window.location.href = `3.html?session=${sessionId}`;
+            window.location.href = `username.html?session=${sessionId}`;
             
         } catch (e) {
             console.error("Update Error: ", e);
