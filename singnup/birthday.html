@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Birthday and Gender</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-primary: #000000;
+            --text-secondary: #555555;
+            --input-border: #c4c4c4;
+            --input-focus: #000000;
+            --input-bg: #ffffff;
+            --btn-bg: #000000;
+            --btn-text: #ffffff;
+            --btn-hover: #333333;
+            --error-text: #d93025;
+            --overlay-bg: rgba(0, 0, 0, 0.5);
+        }
+
+        body.dark {
+            --bg-color: #000000;
+            --text-primary: #ffffff;
+            --text-secondary: #aaaaaa;
+            --input-border: #555555;
+            --input-focus: #ffffff;
+            --input-bg: #000000; /* Set inside input box background to black */
+            --btn-bg: #ffffff;
+            --btn-text: #000000;
+            --btn-hover: #e0e0e0;
+            --error-text: #ff6b6b;
+            --overlay-bg: rgba(255, 255, 255, 0.1);
+        }
+
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        body { 
+            background-color: var(--bg-color); 
+            display: flex; justify-content: center; align-items: center; 
+            height: 100vh; margin: 0; color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .container { width: 100%; max-width: 400px; padding: 25px; text-align: center; }
+        
+        h1 { 
+            font-size: 32px; 
+            font-weight: 600; 
+            margin-bottom: 15px; 
+            color: var(--text-primary); 
+        }
+
+        /* Mobile specific heading adjustment for 2 lines */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 26px; /* Slightly smaller to fit nicely */
+                line-height: 1.3;
+                text-wrap: balance; /* Forces balanced multi-line text */
+                padding: 0 10px;
+            }
+        }
+
+        p { color: var(--text-secondary); font-size: 15px; margin-bottom: 35px; line-height: 1.4; }
+        
+        .input-group { position: relative; margin-bottom: 22px; text-align: left; }
+        
+        .label { 
+            position: absolute; top: -10px; left: 20px; 
+            background: var(--bg-color); padding: 0 5px; 
+            font-size: 12px; color: var(--text-secondary); z-index: 1; 
+        }
+        
+        .dob-flex { display: flex; gap: 12px; }
+        
+        .input-field { 
+            width: 100%; padding: 14px 20px; 
+            border: 1px solid var(--input-border); border-radius: 50px; 
+            font-size: 16px; outline: none; background-color: var(--input-bg);
+            color: var(--text-primary); transition: border 0.2s; 
+        }
+        
+        .input-field:focus { border-color: var(--input-focus); border-width: 1.5px; }
+
+        select.input-field { appearance: none; -webkit-appearance: none; -moz-appearance: none; cursor: pointer; }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type="number"] { -moz-appearance: textfield; }
+
+        .btn-continue { 
+            width: 100%; padding: 15px; background-color: var(--btn-bg); 
+            color: var(--btn-text); border: none; border-radius: 50px; 
+            font-size: 16px; font-weight: 600; cursor: pointer; 
+            margin-top: 15px; transition: background-color 0.2s;
+        }
+        
+        .btn-continue:hover { background-color: var(--btn-hover); }
+        .error-text { color: var(--error-text); font-size: 13px; margin-top: 5px; display: none; text-align: left; padding-left: 20px; }
+
+        /* Custom Modal Styling */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--overlay-bg); backdrop-filter: blur(3px);
+            z-index: 100; justify-content: center; align-items: center;
+        }
+        .modal-box {
+            background: var(--bg-color); color: var(--text-primary);
+            padding: 30px 25px; border-radius: 24px; width: 90%; max-width: 380px;
+            text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .modal-box p { margin-bottom: 25px; font-size: 16px; color: var(--text-primary); line-height: 1.5; }
+        .modal-btn {
+            width: 100%; padding: 14px; margin-bottom: 10px; border-radius: 50px;
+            font-size: 15px; font-weight: 600; cursor: pointer; border: none;
+        }
+        .btn-primary { background: var(--btn-bg); color: var(--btn-text); }
+        .btn-secondary { background: transparent; border: 1.5px solid var(--input-border); color: var(--text-primary); }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 id="main-heading">Let's confirm your age</h1>
+    <p id="sub-text">This helps us personalize your experience...</p>
+
+    <div class="dob-flex">
+        <div class="input-group" style="flex: 1;">
+            <span class="label">Day</span>
+            <input type="number" id="day" class="input-field" placeholder="DD" oninput="if(this.value.length > 2) this.value = this.value.slice(0, 2);">
+        </div>
+        
+        <div class="input-group" style="flex: 2;">
+            <span class="label">Month</span>
+            <select id="month" class="input-field">
+                <option value="01">January</option>
+                <option value="02">February</option>
+                <option value="03">March</option>
+                <option value="04">April</option>
+                <option value="05">May</option>
+                <option value="06">June</option>
+                <option value="07">July</option>
+                <option value="08">August</option>
+                <option value="09">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+            </select>
+        </div>
+
+        <div class="input-group" style="flex: 1.5;">
+            <span class="label">Year</span>
+            <input type="number" id="year" class="input-field" placeholder="YYYY" oninput="if(this.value.length > 4) this.value = this.value.slice(0, 4);">
+        </div>
+    </div>
+
+    <div class="input-group">
+        <span class="label">Gender</span>
+        <select id="gender" class="input-field">
+            <option value="" disabled selected>Select Gender</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Rather Not To Say">Rather Not To Say</option>
+        </select>
+    </div>
+
+    <div id="error" class="error-text">Please enter valid details.</div>
+    <button id="nextBtn" class="btn-continue">Continue</button>
+</div>
+
+<div id="modalOverlay" class="modal-overlay">
+    <div class="modal-box">
+        <p id="modalText">Message goes here</p>
+        <button id="modalBtnA" class="modal-btn btn-primary">Option A</button>
+        <button id="modalBtnB" class="modal-btn btn-secondary">Option B</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getFirestore, doc, getDoc, updateDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
+        authDomain: "question-metabase.firebaseapp.com",
+        databaseURL: "https://question-metabase-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "question-metabase",
+        storageBucket: "question-metabase.firebasestorage.app",
+        messagingSenderId: "770698198753",
+        appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
+        measurementId: "G-6ZP1FPMKSJ"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session');
+    let theme = urlParams.get("theme") ? urlParams.get("theme").toLowerCase() : null;
+
+    /* ================= LIVE THEME ================= */
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
+
+    function applyTheme() {
+        if (theme === "dark" || theme === "d") {
+            document.body.classList.add("dark");
+            return;
+        }
+        if (theme === "light" || theme === "l") {
+            document.body.classList.remove("dark");
+            return;
+        }
+        if (mediaQuery.matches) {
+            document.body.classList.add("dark");
+        } else {
+            document.body.classList.remove("dark");
+        }
+    }
+
+    applyTheme();
+
+    mediaQuery.addEventListener("change", () => {
+        if (!theme) {
+            applyTheme();
+        }
+    });
+
+    /* ================= FIREBASE LOGIC ================= */
+    let currentType = "";
+    let userFirstName = "";
+    let continueUrl = "";
+    const docRef = sessionId ? doc(db, "ASPX Keys", sessionId) : null;
+
+    if (docRef) {
+        getDoc(docRef).then((docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                currentType = data["Type"];
+                userFirstName = data["First Name"]; 
+                continueUrl = data.continue || "/"; 
+
+                const heading = document.getElementById("main-heading");
+                const subText = document.getElementById("sub-text");
+
+                if (currentType === "personal" || currentType === "business" || currentType === "kids") {
+                    heading.innerText = "Let’s Confirm Some of Your Basic Information";
+                }
+
+                if (currentType === "kids") {
+                    subText.innerText = `Enter ${userFirstName}'s birthday and gender`;
+                } else if (currentType === "personal" || currentType === "business") {
+                    subText.innerText = "Enter Your birthday & Gender";
+                }
+            }
+        }).catch((error) => console.error("Error fetching doc: ", error));
+    }
+
+    // Disable Arrow Up/Down Keys on Number Inputs
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+                e.preventDefault();
+            }
+        });
+    });
+
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalText = document.getElementById('modalText');
+    const modalBtnA = document.getElementById('modalBtnA');
+    const modalBtnB = document.getElementById('modalBtnB');
+
+    // Robust Date Validation (Leap Years & Correct Days Per Month)
+    function isValidDate(day, month, year) {
+        const d = parseInt(day, 10);
+        const m = parseInt(month, 10);
+        const y = parseInt(year, 10);
+        
+        if (isNaN(d) || isNaN(m) || isNaN(y)) return false;
+        
+        const isLeapYear = (y % 4 === 0 && y % 100 !== 0) || (y % 400 === 0);
+        const daysInMonth = [31, isLeapYear ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+        
+        return d > 0 && d <= daysInMonth[m - 1];
+    }
+
+    // Robust Age Calculation
+    function calculateAge(day, month, year) {
+        const today = new Date();
+        const birthDate = new Date(year, month - 1, day);
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const mDiff = today.getMonth() - birthDate.getMonth();
+        if (mDiff < 0 || (mDiff === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+        return age;
+    }
+
+    function showError(message) {
+        const errorDiv = document.getElementById('error');
+        errorDiv.innerText = message;
+        errorDiv.style.display = 'block';
+    }
+
+    const getFormattedDate = () => `${document.getElementById('day').value}/${document.getElementById('month').value}/${document.getElementById('year').value}`;
+
+    document.getElementById('nextBtn').addEventListener('click', async () => {
+        document.getElementById('error').style.display = 'none';
+
+        const day = document.getElementById('day').value;
+        const month = document.getElementById('month').value;
+        const year = document.getElementById('year').value;
+        const gender = document.getElementById('gender').value;
+
+        // Calendar Logic Check
+        if (day.length === 0 || year.length !== 4 || !isValidDate(day, month, year)) {
+            showError("Please enter a valid calendar date.");
+            return;
+        }
+
+        if (!gender) {
+            showError("Please select a gender.");
+            return;
+        }
+
+        const age = calculateAge(day, month, year);
+
+        // Fixed Grammar and Logic for Kids Account
+        if (currentType === "kids" && age >= 15) {
+            modalText.innerText = `We noticed that ${userFirstName || 'this user'} is 15 or older. Would you like to switch to a Personal Account?`;
+            modalBtnA.innerText = "Continue with Kids Account";
+            modalBtnB.innerText = "Switch to Personal Account";
+            
+            modalBtnA.onclick = () => saveAndProceed({}); 
+            modalBtnB.onclick = () => saveAndProceed({ "Type": "personal", "Family": "no" }); 
+            
+            modalOverlay.style.display = 'flex';
+            return;
+        }
+
+        // Fixed Grammar and Logic for Personal Account
+        if (currentType === "personal" && age < 15) {
+            modalText.innerText = "We noticed that you are under 15 years old. Would you like to switch to a Kids Account?";
+            modalBtnA.innerText = "Switch to Kids Account";
+            modalBtnB.innerText = "Cancel";
+            
+            modalBtnA.onclick = () => saveAndProceed({ "Type": "kids", "Family": "commit database" });
+            modalBtnB.onclick = async () => {
+                try {
+                    await deleteDoc(docRef);
+                    window.location.href = continueUrl; 
+                } catch (e) {
+                    console.error("Delete Error: ", e);
+                }
+            };
+            
+            modalOverlay.style.display = 'flex';
+            return;
+        }
+
+        saveAndProceed({});
+    });
+
+    async function saveAndProceed(additionalData) {
+        try {
+            const baseData = {
+                "Date of Birth": getFormattedDate(),
+                "Gender": document.getElementById('gender').value,
+                updatedAt: serverTimestamp()
+            };
+            
+            const finalData = { ...baseData, ...additionalData };
+
+            await updateDoc(docRef, finalData);
+            window.location.href = `3.html?session=${sessionId}`;
+            
+        } catch (e) {
+            console.error("Update Error: ", e);
+            alert("Session expired or invalid document ID.");
+        }
+    }
+</script>
+
+</body>
+</html>
