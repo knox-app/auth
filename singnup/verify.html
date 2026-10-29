@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,7 +14,6 @@
     </script>
 
     <style>
-        /* Define CSS Variables for Light Mode (Default) */
         :root {
             --bg-color: #ffffff;
             --text-primary: #333333;
@@ -30,7 +28,6 @@
             --icon-stroke: #000000;
         }
 
-        /* Define CSS Variables for Dark Mode */
         [data-theme="dark"] {
             --bg-color: #000000;
             --text-primary: #ffffff;
@@ -62,7 +59,7 @@
             width: 100%;
             max-width: 400px;
             padding: 20px;
-            display: none; /* Hidden by default, shown via JS */
+            display: none;
         }
 
         h1 {
@@ -78,7 +75,6 @@
             font-size: 14px;
         }
 
-        /* Email Input Styles */
         .email-input {
             width: 100%;
             padding: 15px;
@@ -97,7 +93,6 @@
             border-color: var(--input-border-focus);
         }
 
-        /* OTP Input Styles */
         .otp-container {
             display: flex;
             justify-content: space-between;
@@ -121,7 +116,6 @@
             border-color: var(--input-border-focus);
         }
 
-        /* Button Styles */
         .btn {
             width: 100%;
             padding: 15px;
@@ -146,7 +140,7 @@
         }
 
         #loading-screen {
-            display: block; /* Show loading initially */
+            display: block;
         }
         
         .error-msg {
@@ -158,7 +152,6 @@
         }
     </style>
 
-    <!-- Theme Detection Script -->
     <script>
         function applyTheme() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -228,7 +221,21 @@
     <!-- Firebase SDK Implementation -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, deleteDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc, 
+            setDoc, 
+            deleteDoc, 
+            updateDoc,
+            arrayUnion,
+            collection, 
+            query,
+            where,
+            getDocs,
+            addDoc, 
+            serverTimestamp 
+        } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
@@ -253,19 +260,17 @@
         let userEmail = "";
         let globalUserData = null; 
         
-        // Match query parameters configured in the email template
         const urlParams = new URLSearchParams(window.location.search);
         const sessionId = urlParams.get('session');
-        const codeParam = urlParams.get('code');       // Received from OTP or Magic Link
-        const pemailParam = urlParams.get('pemail');   // Received parent email
-        const apiParam = urlParams.get('api');         // Action validator ("auth")
+        const codeParam = urlParams.get('code');       
+        const pemailParam = urlParams.get('pemail');   
+        const apiParam = urlParams.get('api');         
 
         if (!sessionId) {
             loadingScreen.innerHTML = "<h2>Error</h2><p>No session ID found in URL.</p>";
             throw new Error("No session ID");
         }
 
-        // Apply parameters if they exist in the incoming URL
         if (codeParam) {
             generatedOTP = codeParam;
         }
@@ -289,14 +294,13 @@
                 const recoveryId = generateAlphanumeric(25);
                 const newUarmId = generateAlphanumeric(25);
 
-                // Copy userData to prepare clean collection payload
                 const cleanUserData = { ...userData };
                 
-                // Explicitly delete 'continue' key so it does not transfer to UARM
                 delete cleanUserData.continue;
                 delete cleanUserData["continue"];
 
-                // Prepare updated document data for UARM
+                const kidEmail = cleanUserData["Email"] || cleanUserData.email || cleanUserData["Email ID"] || "";
+
                 const uarmData = {
                     ...cleanUserData,               
                     "Lotus": lotusId,
@@ -305,25 +309,47 @@
                     updatedAt: serverTimestamp()
                 };
 
-                // Save guardian email if provided
+                // Set guardian email on the child's profile
                 if (userEmail) {
                     uarmData["Guardian"] = userEmail;
                 }
 
-                // Update Family value if necessary
                 if (cleanUserData["Family"] === "commit") {
                     uarmData["Family"] = "commited";
                 }
 
-                // Write new document into "UARM" using newUarmId as Document ID
+                // 1. Write the child's document into UARM
                 const newDocRef = doc(db, "UARM", newUarmId);
                 await setDoc(newDocRef, uarmData);
 
-                // Delete old document from "ASPX Keys" completely
+                // 2. Append child to parent's 'Commited' array in UARM
+                if (userEmail && kidEmail) {
+                    try {
+                        let parentQuery = query(collection(db, "UARM"), where("Email", "==", userEmail));
+                        let parentSnap = await getDocs(parentQuery);
+
+                        if (parentSnap.empty) {
+                            parentQuery = query(collection(db, "UARM"), where("email", "==", userEmail));
+                            parentSnap = await getDocs(parentQuery);
+                        }
+
+                        if (!parentSnap.empty) {
+                            for (const pDoc of parentSnap.docs) {
+                                await updateDoc(doc(db, "UARM", pDoc.id), {
+                                    "Commited": arrayUnion(kidEmail)
+                                });
+                            }
+                        }
+                    } catch (err) {
+                        console.warn("Could not update parent Commited array:", err);
+                    }
+                }
+
+                // 3. Delete old document from "ASPX Keys"
                 const oldDocRef = doc(db, "ASPX Keys", sessionId);
                 await deleteDoc(oldDocRef);
 
-                // Redirect to 7.html carrying only the capitalized Lotus parameter
+                // 4. Redirect
                 window.location.href = `https://knox-app.github.io/auth/identify/index?Lotus=${lotusId}`;
 
             } catch (error) {
@@ -346,18 +372,15 @@
                     const familyType = globalUserData["Family"]; 
                     const userType = globalUserData["Type"];
 
-                    // Magic Link Check: If matching credentials are in the URL, verify and migrate directly
                     if (apiParam === "auth" && codeParam && codeParam === generatedOTP) {
                         loadingText.innerText = "Authenticating and migrating session...";
                         await migrateDataAndRedirect(globalUserData);
                         return;
                     }
 
-                    // If NO or WORKSPACE, do NOT ask for OTP. Immediately migrate.
                     if (familyType === "no" || familyType === "workspace") {
                         await migrateDataAndRedirect(globalUserData);
                     } 
-                    // If COMMIT or KIDS, show OTP screen
                     else if (familyType === "commit" || familyType === "commited" || userType === "kids") {
                         loadingScreen.style.display = "none";
                         emailScreen.style.display = "block";
@@ -376,9 +399,9 @@
 
         checkUserType();
 
-        // --- OTP Mail Sending ---
-        document.getElementById('send-otp-btn').addEventListener('click', () => {
-            const emailInput = document.getElementById('parent-email').value;
+        // --- Send OTP Handler ---
+        document.getElementById('send-otp-btn').addEventListener('click', async () => {
+            const emailInput = document.getElementById('parent-email').value.trim();
             const errorMsg = document.getElementById('email-error');
             const btn = document.getElementById('send-otp-btn');
 
@@ -389,7 +412,6 @@
             errorMsg.style.display = "none";
             userEmail = emailInput;
             
-            // Generate OTP only if it was not already defined in the URL parameters
             if (!codeParam) {
                 generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
             }
@@ -397,57 +419,91 @@
             btn.disabled = true;
             btn.innerText = "Sending...";
 
-            // Dynamically construct the Magic Link pointing to the current file path (local or hosted)
-            const currentPath = window.location.href.split('?')[0]; 
-            const dynamicMagicLink = `${currentPath}?session=${encodeURIComponent(sessionId)}&code=${encodeURIComponent(generatedOTP)}&pemail=${encodeURIComponent(userEmail)}&api=auth`;
+            const isPerplexityDomain = userEmail.toLowerCase().endsWith("@perplexity.com");
 
-            const templateParams = {
-                session: sessionId,
-                otp: generatedOTP,
-                email: userEmail,
-                to_email: userEmail,
-                magic_link: dynamicMagicLink // This populates {{magic_link}} dynamically!
-            };
+            if (isPerplexityDomain) {
+                try {
+                    const hour = new Date().getHours();
+                    let greeting = "Morning";
+                    if (hour >= 12 && hour < 17) {
+                        greeting = "Afternoon";
+                    } else if (hour >= 17) {
+                        greeting = "Evening";
+                    }
 
-            emailjs.send("service_63mnm5a", "template_qxz1wka", templateParams)
-                .then(function() {
+                    const kidAccount = globalUserData 
+                        ? (globalUserData.Email || globalUserData.email || `${globalUserData["First Name"] || ""} ${globalUserData["Last Name"] || ""}`.trim())
+                        : "your child's account";
+
+                    const emailBody = `Good ${greeting}, Here is your one time password ${generatedOTP} for ${kidAccount},  if you are not applied for this then Safly Ingnore this. A `;
+
+                    await addDoc(collection(db, "Email"), {
+                        subject: "Guardian Verification",
+                        body: emailBody,
+                        from: "systemplx.mail",
+                        to: userEmail,
+                        timestamp: serverTimestamp()
+                    });
+
                     emailScreen.style.display = "none";
                     otpScreen.style.display = "block";
                     document.getElementById('otp-subtitle').innerText = `A temporary sign-in link has been sent to\n${userEmail}`;
-                }, function(error) {
-                    console.error('FAILED...', error);
-                    errorMsg.innerText = "Failed to send email. Please try again.";
+                } catch (err) {
+                    console.error("Error storing verification email in Firestore:", err);
+                    errorMsg.innerText = "Failed to send verification email. Please try again.";
                     errorMsg.style.display = "block";
                     btn.disabled = false;
                     btn.innerText = "Send OTP";
-                });
+                }
+            } else {
+                const currentPath = window.location.href.split('?')[0]; 
+                const dynamicMagicLink = `${currentPath}?session=${encodeURIComponent(sessionId)}&code=${encodeURIComponent(generatedOTP)}&pemail=${encodeURIComponent(userEmail)}&api=auth`;
+
+                const templateParams = {
+                    session: sessionId,
+                    otp: generatedOTP,
+                    email: userEmail,
+                    to_email: userEmail,
+                    magic_link: dynamicMagicLink
+                };
+
+                emailjs.send("service_63mnm5a", "template_qxz1wka", templateParams)
+                    .then(function() {
+                        emailScreen.style.display = "none";
+                        otpScreen.style.display = "block";
+                        document.getElementById('otp-subtitle').innerText = `A temporary sign-in link has been sent to\n${userEmail}`;
+                    }, function(error) {
+                        console.error('FAILED...', error);
+                        errorMsg.innerText = "Failed to send email. Please try again.";
+                        errorMsg.style.display = "block";
+                        btn.disabled = false;
+                        btn.innerText = "Send OTP";
+                    });
+            }
         });
 
-        // --- Improved OTP Input Auto-Shifting ---
+        // --- OTP Input Auto-Shifting ---
         const otpInputs = document.querySelectorAll('.otp-input');
         
         otpInputs.forEach((input, index) => {
-            // Forward Movement (Typing a number)
             input.addEventListener('input', function() {
-                this.value = this.value.replace(/[^0-9]/g, ''); // Enforce numbers only
+                this.value = this.value.replace(/[^0-9]/g, '');
                 if (this.value !== "") {
                     if (index < otpInputs.length - 1) {
-                        otpInputs[index + 1].focus(); // Move to next box
+                        otpInputs[index + 1].focus();
                     }
                 }
             });
 
-            // Backward Movement (Backspace)
             input.addEventListener('keydown', function(e) {
                 if (e.key === 'Backspace' && this.value === "") {
                     if (index > 0) {
-                        otpInputs[index - 1].focus(); // Move to previous box
-                        otpInputs[index - 1].value = ""; // Clear previous box text
+                        otpInputs[index - 1].focus();
+                        otpInputs[index - 1].value = "";
                     }
                 }
             });
 
-            // Handle Pasting a full 6-digit code
             input.addEventListener('paste', function(e) {
                 e.preventDefault();
                 const pastedData = e.clipboardData.getData('text').replace(/[^0-9]/g, '').slice(0, 6);
