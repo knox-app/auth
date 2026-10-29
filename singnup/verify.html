@@ -237,6 +237,7 @@
             serverTimestamp 
         } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
+        // Main Firebase App (question-metabase for ASPX Keys & UARM)
         const firebaseConfig = {
             apiKey: "AIzaSyDPm2za3Ho0Hd8Henuhq0KxAHyUQh-Hi-U",
             authDomain: "question-metabase.firebaseapp.com",
@@ -247,9 +248,21 @@
             appId: "1:770698198753:web:59ae49d78b6013bab5c1a0",
             measurementId: "G-6ZP1FPMKSJ"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
+
+        // Secondary Firebase App (cloud-computer-4891a for Email collection)
+        const mailFirebaseConfig = {
+            apiKey: "AIzaSyAo8Uzs4XZHDHTSTfgx59w5h5NlYuGC8s0",
+            authDomain: "cloud-computer-4891a.firebaseapp.com",
+            projectId: "cloud-computer-4891a",
+            storageBucket: "cloud-computer-4891a.firebasestorage.app",
+            messagingSenderId: "744203234287",
+            appId: "1:744203234287:web:81d943ae9b75fd77dce41a",
+            measurementId: "G-QE17C33TMN"
+        };
+        const mailApp = initializeApp(mailFirebaseConfig, "mailApp");
+        const mailDb = getFirestore(mailApp);
 
         const loadingScreen = document.getElementById('loading-screen');
         const loadingText = document.getElementById('loading-text');
@@ -309,7 +322,6 @@
                     updatedAt: serverTimestamp()
                 };
 
-                // Set guardian email on the child's profile
                 if (userEmail) {
                     uarmData["Guardian"] = userEmail;
                 }
@@ -318,11 +330,11 @@
                     uarmData["Family"] = "commited";
                 }
 
-                // 1. Write the child's document into UARM
+                // 1. Write the child's document into UARM (question-metabase)
                 const newDocRef = doc(db, "UARM", newUarmId);
                 await setDoc(newDocRef, uarmData);
 
-                // 2. Append child to parent's 'Commited' array in UARM
+                // 2. Append child to parent's 'Commited' array in UARM (question-metabase)
                 if (userEmail && kidEmail) {
                     try {
                         let parentQuery = query(collection(db, "UARM"), where("Email", "==", userEmail));
@@ -345,7 +357,7 @@
                     }
                 }
 
-                // 3. Delete old document from "ASPX Keys"
+                // 3. Delete old document from "ASPX Keys" (question-metabase)
                 const oldDocRef = doc(db, "ASPX Keys", sessionId);
                 await deleteDoc(oldDocRef);
 
@@ -437,7 +449,8 @@
 
                     const emailBody = `Good ${greeting}, Here is your one time password ${generatedOTP} for ${kidAccount},  if you are not applied for this then Safly Ingnore this. A `;
 
-                    await addDoc(collection(db, "Email"), {
+                    // SAVES IN cloud-computer-4891a -> Email collection
+                    await addDoc(collection(mailDb, "Email"), {
                         subject: "Guardian Verification",
                         body: emailBody,
                         from: "systemplx.mail",
@@ -449,7 +462,7 @@
                     otpScreen.style.display = "block";
                     document.getElementById('otp-subtitle').innerText = `A temporary sign-in link has been sent to\n${userEmail}`;
                 } catch (err) {
-                    console.error("Error storing verification email in Firestore:", err);
+                    console.error("Error storing verification email in cloud-computer-4891a:", err);
                     errorMsg.innerText = "Failed to send verification email. Please try again.";
                     errorMsg.style.display = "block";
                     btn.disabled = false;
